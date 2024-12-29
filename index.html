@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Protection Tool</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <nav class="top-header">
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#need-help">Need Help</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact Info</a></li>
+    </ul>
+    <div class="social-icons">
+      <a href="https://www.linkedin.com/in/akarsh-chaturvedi" target="_blank" title="LinkedIn">
+        <i class="fab fa-linkedin"></i>
+      </a>
+      <a href="https://github.com/AkarshYash" target="_blank" title="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+  </nav>
+
+  <header id="home">
+    <h1>Welcome to the Website</h1>
+    <p>Protect your web servers and web pages from DDoS attacks</p>
+  </header>
+
+  <main>
+    <section class="registration" id="need-help">
+      <h2>Register Your Website</h2>
+      <input type="email" id="email" placeholder="Enter your Email ID">
+      <input type="url" id="website-url" placeholder="Enter your Website URL">
+      <button id="submit-btn">Submit</button>
+    </section>
+
+    <section class="ip-tracking">
+      <h2>IP Address Monitoring</h2>
+      <p>Example: Different IP addresses accessing your website:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>IP Address</th>
+            <th>Data Type</th>
+          </tr>
+        </thead>
+        <tbody id="ip-table">
+          <tr>
+            <td>192.168.1.1</td>
+            <td>HTML</td>
+          </tr>
+          <tr>
+            <td>10.0.0.5</td>
+            <td>FTP</td>
+          </tr>
+          <tr>
+            <td>172.16.0.2</td>
+            <td>UDP</td>
+          </tr>
+          <tr>
+            <td>203.0.113.9</td>
+            <td>HTTPS</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Total Members: <span id="total-members">4</span></p>
+    </section>
+
+    <section class="about-project" id="about">
+      <h2>About the Project</h2>
+      <p>
+        This project identifies patterns of data packet flow using Python and machine learning. 
+        If malicious IPs attempting DDoS attacks are detected, they are immediately blocked. 
+        Example of blocked IPs:
+      </p>
+      <ul id="blocked-ips">
+        <li>192.168.100.5</li>
+        <li>203.0.113.45</li>
+      </ul>
+    </section>
+
+    <section id="contact">
+      <h2>Contact Information</h2>
+      <p>Email: akarsh@example.com</p>
+      <p>Phone: +91-824555255235550</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Akarsh Chaturvedi { Your buddy Kalki =0.1 }</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
