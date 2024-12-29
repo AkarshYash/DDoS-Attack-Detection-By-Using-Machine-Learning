@@ -47,10 +47,7 @@ These use cases highlight the system’s capabilities in real-time monitoring, a
 
 ### 3. **IP Blocking**
 - **Function:** block_ip(ip_address)
-  - This function takes an IP![Screenshot 2024-12-29 201404](https://github.com/user-attachments/assets/1f4752c6-d407-4365-b292-94c50070a951)
-![Screenshot 2024-12-29 201416](https://github.com/user-attachments/assets/e350855c-c954-4f55-b200-e5ca3a5ff15e)
-![pexels-didsss-1276553](https://github.com/user-attachments/assets/dd9db74e-921f-4d58-91e2-8e7d5a92a767)
- address and executes a shell command to block the IP using iptables.
+  - This function takes an IP address and executes a shell command to block the IP using iptables.
   - It handles any potential errors when executing the command and prints appropriate messages.
 
 ### 4. **Web Application for Predictions**
@@ -64,11 +61,6 @@ These use cases highlight the system’s capabilities in real-time monitoring, a
 - In the main block, the script calls the monitor_traffic function to start monitoring logs.
 - It demonstrates how to block a list of example IP addresses.
 
-
-![Screenshot 2024-12-29 201416](https://g![Screenshot 2024-12-29 201404](https://github.com/user-attachments/assets/90c050ff-6ac4-4f62-9e6b-017faab37027)
-ithub.com/user-attachments/assets/371b9af3-959c-435b-b888-86b07f2cbdfd)
-![Screenshot 2024-12-29 201404](https://github.com/user-attachments/assets/2c3bde24-3c0b-49eb-a257-da114235d7e6)
-![Screenshot 2024-12-29 201416](https://![Screenshot 2024-12-29 201404](https://github.com/user-attachments/assets/f5793f61-8a10-4aa5-bfac-d2bc1d32ae50)
-![Screenshot 2024-12-29 201416](https://github.com/user-attachments/assets/90410ccd-e8c8-4a00-a5b5-a98504540b06)
-
-github.com/user-attachments/assets/b01520ae-68c1-4ef3-8c92-7c2733f09b0f)
+![UI](https://github.com/user-attachments/assets/48784a49-83b6-4197-b333-18d17d4bf353)
+![UI](https://github.com/user-attachments/assets/09461609-ac4d-41f4-b5e4-6eb4b04c514a)
+![UI](https://github.com/user-attachments/assets/28ba7c75-5d44-47f9-b11d-36033d6863fd)
