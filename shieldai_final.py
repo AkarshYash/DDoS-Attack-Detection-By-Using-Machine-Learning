@@ -1,684 +1,474 @@
 """
-DDOS Defender - single-file FastAPI app (ddos_defender.py)
-Features included (MVP single-file):
-- FastAPI backend serving a single-page dashboard (HTML/CSS/JS embedded)
-- SQLite via SQLAlchemy for users, domains, flows, alerts
-- JWT-based auth (simple) for API and dashboard
-- Simulated traffic agent to produce flow records (no root needed)
-- ML model pipeline: feature engineering, RandomForest training, prediction, model persistence (joblib)
-- Server-Sent Events (SSE) for real-time updates to dashboard
-- Blocking API (simulated) that records block rules in DB (no system changes)
-- Export alerts as CSV
-- Basic RBAC (admin vs user)
-- Inline frontend uses Chart.js and simple UI for registration, domain listing, live metrics, and alerts
+Shield-AI MVP (single-file prototype)
+Requirements:
+  pip install fastapi uvicorn starlette sklearn pandas numpy joblib python-multipart python-jose[cryptography]
+  Optional: xgboost shap
 
-Notes:
-- This is a developer-focused single-file prototype. Replace simulated ingestion with real packet capture (scapy / bro / zeek / CICFlowMeter) for production.
-- For production: move DB to PostgreSQL/Timescale, use Celery/Redis, secure JWT secrets, deploy behind HTTPS, and hook into Cloudflare/AWS WAF for blocking.
+What this file contains:
+ - FastAPI backend for auth, domain registration, flow ingestion, ML scoring, blocking
+ - Simple in-memory DB (SQLite via SQLModel could be used; here we use sqlite3 for portability)
+ - Minimal frontend served from the same app (single-page HTML/JS/CSS). Includes dark/light theme toggle and a pop help/chat bubble.
+ - ML training & scoring hooks that expect CC-DoS 2019M dataset at ./data/cc_ddos_2019m.csv
+ - Gemini chatbot integration placeholder (set GEMINI_API_KEY env var, implement actual call per Google API docs)
 
-Run:
-    python -m pip install fastapi uvicorn sqlalchemy joblib scikit-learn pandas python-multipart jinja2
-    uvicorn ddos_defender:app --reload --port 8000
-
-Open http://localhost:8000 in your browser.
-
+This is a portable starting point — expand into modular services, add Celery, TimescaleDB, Kafka, or k8s for production.
 """
 
-import os
-import time
-import threading
-import json
-import uuid
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict
-
-from fastapi import FastAPI, Request, HTTPException, Depends, BackgroundTasks, Form
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Float, Boolean, Text
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+import sqlite3
+import os
+import json
+import time
+from typing import List, Dict, Any
+import threading
+import traceback
+
+# ML imports
+import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier, IsolationForest
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 import joblib
-import base64
+
+# Security
 import hashlib
+import secrets
+import base64
+from jose import JWTError, jwt
 
-# ------------------------ Config ------------------------
-DB_FILE = 'ddos_defender.db'
-JWT_SECRET = os.environ.get('DDOS_JWT_SECRET', 'devsecret123')
-MODEL_FILE = 'ddos_model.joblib'
-SIMULATION_INTERVAL = 1.0  # seconds between generated flows
+# Config
+SECRET_KEY = os.environ.get("SHIELD_SECRET_KEY", secrets.token_hex(32))
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_SECONDS = 3600 * 24
+DATA_PATH = "./data/cc_ddos_2019m.csv"  # user should place dataset here
+MODEL_PATH = "./models"
+os.makedirs(MODEL_PATH, exist_ok=True)
 
-# ------------------------ DB Setup ------------------------
-Base = declarative_base()
-engine = create_engine(f'sqlite:///{DB_FILE}', connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+app = FastAPI(title="Shield-AI MVP")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password_hash = Column(String)
-    is_admin = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+# Simple sqlite-based persistence for users, domains, blocks, flows
+DB_PATH = "shield_ai.db"
+conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+cur = conn.cursor()
 
-class Domain(Base):
-    __tablename__ = 'domains'
-    id = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String, index=True)
-    domain = Column(String, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+def init_db():
+    cur.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password_hash TEXT, role TEXT, org TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS domains (id INTEGER PRIMARY KEY, org TEXT, domain TEXT, token TEXT, verified INTEGER DEFAULT 0)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS blocks (id INTEGER PRIMARY KEY, domain TEXT, ip TEXT, start_ts INTEGER, end_ts INTEGER, reason TEXT, by TEXT)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS flows (id INTEGER PRIMARY KEY, domain TEXT, src_ip TEXT, dst_ip TEXT, protocol TEXT, packet_count INTEGER, byte_count INTEGER, ts INTEGER, features_json TEXT, score REAL)''')
+    conn.commit()
 
-class Flow(Base):
-    __tablename__ = 'flows'
-    id = Column(Integer, primary_key=True, index=True)
-    domain = Column(String, index=True)
-    src_ip = Column(String)
-    dst_ip = Column(String)
-    src_port = Column(Integer)
-    dst_port = Column(Integer)
-    protocol = Column(String)
-    bytes = Column(Integer)
-    packets = Column(Integer)
-    duration = Column(Float)
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    score = Column(Float, default=0.0)
-    is_malicious = Column(Boolean, default=False)
+init_db()
 
-class Alert(Base):
-    __tablename__ = 'alerts'
-    id = Column(Integer, primary_key=True, index=True)
-    flow_id = Column(Integer)
-    domain = Column(String)
-    src_ip = Column(String)
-    score = Column(Float)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    handled = Column(Boolean, default=False)
+# ----- Auth helpers -----
 
-class BlockRule(Base):
-    __tablename__ = 'blocks'
-    id = Column(Integer, primary_key=True, index=True)
-    src_ip = Column(String)
-    domain = Column(String)
-    expires_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    reason = Column(Text)
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
 
-Base.metadata.create_all(bind=engine)
+def create_access_token(data: dict, expires_delta: int = ACCESS_TOKEN_EXPIRE_SECONDS):
+    to_encode = data.copy()
+    to_encode.update({"exp": int(time.time()) + expires_delta})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
-# ------------------------ Simple Auth ------------------------
-import jwt
-
-def hash_pw(pw: str) -> str:
-    return hashlib.sha256(pw.encode()).hexdigest()
-
-class TokenData(BaseModel):
-    email: str
-    exp: int
-
-security = HTTPBearer()
-
-def create_token(email: str, minutes=60*24) -> str:
-    payload = {"email": email, "exp": int((datetime.utcnow() + timedelta(minutes=minutes)).timestamp())}
-    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
-
-def verify_token(creds: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
-    token = creds.credentials
+def verify_token(token: str):
     try:
-        decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        return TokenData(email=decoded['email'], exp=decoded['exp'])
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
 
-# ------------------------ FastAPI App ------------------------
-app = FastAPI(title='DDOS Defender - Single File')
-
-# Serve a tiny static directory (for potential assets) - optional
-if not os.path.exists('static'):
-    os.makedirs('static')
-
-app.mount('/static', StaticFiles(directory='static'), name='static')
-
-# ------------------------ Utility Helpers ------------------------
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# Minimal model persistence
-model_lock = threading.Lock()
-model: Optional[RandomForestClassifier] = None
-
-# ------------------------ Simulated Traffic Generator ------------------------
-SIM_RUNNING = False
-listeners: List[Dict] = []  # for SSE listeners
-
-def synthetic_flow(domain: str):
-    """Return a dict representing a synthetic flow record."""
-    import random, ipaddress
-    src_ip = str(ipaddress.IPv4Address(random.getrandbits(32)))
-    dst_ip = '203.0.113.5'
-    src_port = random.randint(1024, 65535)
-    dst_port = random.choice([80, 443, 8080, 22])
-    protocol = random.choice(['TCP', 'UDP'])
-    packets = random.randint(1, 1000)
-    bytes_ = packets * random.randint(40, 1500)
-    duration = round(random.random() * 10, 3)
-    ts = datetime.utcnow()
-    return {
-        'domain': domain,
-        'src_ip': src_ip,
-        'dst_ip': dst_ip,
-        'src_port': src_port,
-        'dst_port': dst_port,
-        'protocol': protocol,
-        'packets': packets,
-        'bytes': bytes_,
-        'duration': duration,
-        'timestamp': ts.isoformat()
-    }
-
-def ingest_flow_record(rec: Dict):
-    """Store flow into DB and run model scoring if model available."""
-    db = next(get_db())
-    f = Flow(
-        domain=rec['domain'],
-        src_ip=rec['src_ip'],
-        dst_ip=rec['dst_ip'],
-        src_port=rec['src_port'],
-        dst_port=rec['dst_port'],
-        protocol=rec['protocol'],
-        bytes=rec['bytes'],
-        packets=rec['packets'],
-        duration=rec['duration'],
-        timestamp=datetime.fromisoformat(rec['timestamp'])
-    )
-    db.add(f)
-    db.commit()
-    db.refresh(f)
-
-    # scoring
-    global model
-    with model_lock:
-        if model is not None:
-            X = pd.DataFrame([feature_vector_from_flow(f)])
-            score = float(model.predict_proba(X)[:, 1][0])
-            f.score = score
-            f.is_malicious = score > 0.6
-            db.add(f)
-            db.commit()
-            if f.is_malicious:
-                alert = Alert(flow_id=f.id, domain=f.domain, src_ip=f.src_ip, score=f.score)
-                db.add(alert)
-                db.commit()
-                broadcast({"type": "alert", "alert": serialize_alert(alert)})
-    broadcast({"type": "flow", "flow": serialize_flow(f)})
-
-# ------------------------ Feature engineering and model ------------------------
-
-def feature_vector_from_flow(f: Flow) -> Dict:
-    # simple engineered features
-    return {
-        'bytes': f.bytes,
-        'packets': f.packets,
-        'duration': f.duration,
-        'bps': (f.bytes / f.duration) if f.duration > 0 else f.bytes,
-        'pps': (f.packets / f.duration) if f.duration > 0 else f.packets,
-        'dst_port': f.dst_port,
-        'protocol_tcp': 1 if f.protocol == 'TCP' else 0
-    }
-
-def dataframe_from_flows(flows: List[Flow]):
-    rows = []
-    for f in flows:
-        fv = feature_vector_from_flow(f)
-        rows.append(fv)
-    return pd.DataFrame(rows)
-
-@app.post('/train')
-def train_model(simulate: bool = True):
-    """Train a RandomForest on simulated or historical flows.
-    If simulate=True, generate a synthetic labeled dataset (normal vs ddos-like).
-    """
-    global model
-    if simulate:
-        df = generate_synthetic_dataset(n_samples=2000)
-        X = df.drop(columns=['label'])
-        y = df['label']
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        clf = RandomForestClassifier(n_estimators=100, random_state=42)
-        clf.fit(X_train, y_train)
-        preds = clf.predict(X_test)
-        acc = accuracy_score(y_test, preds)
-        report = classification_report(y_test, preds, output_dict=True)
-        with model_lock:
-            model = clf
-            joblib.dump(model, MODEL_FILE)
-        return {"status": "trained", "accuracy": acc, "report": report}
-    else:
-        # train from stored flows in DB (if any)
-        db = next(get_db())
-        flows = db.query(Flow).all()
-        if len(flows) < 50:
-            raise HTTPException(status_code=400, detail='Not enough historical flows to train. Use simulate=True')
-        df = dataframe_from_flows(flows)
-        # In this path we don't have labels; this is a demonstration
-        # We'll self-label by thresholding bps
-        df['label'] = (df['bps'] > df['bps'].median() * 3).astype(int)
-        X = df.drop(columns=['label'])
-        y = df['label']
-        clf = RandomForestClassifier(n_estimators=100, random_state=42)
-        clf.fit(X, y)
-        with model_lock:
-            model = clf
-            joblib.dump(model, MODEL_FILE)
-        return {"status": "trained_from_db", "samples": len(df)}
-
-def generate_synthetic_dataset(n_samples=1000):
-    import numpy as np
-    rows = []
-    for _ in range(n_samples):
-        # normal traffic
-        bytes_ = int(abs(1000 + 5000 * np.random.randn()))
-        packets = int(abs(10 + 20 * np.random.randn()))
-        duration = abs(0.1 + 1.0 * abs(np.random.randn()))
-        bps = bytes_ / duration if duration > 0 else bytes_
-        pps = packets / duration if duration > 0 else packets
-        dst_port = int(np.random.choice([80, 443, 8080, 22, 53]))
-        protocol_tcp = int(np.random.choice([0,1], p=[0.2, 0.8]))
-        label = 0
-        # inject DDoS-like samples
-        if np.random.rand() < 0.1:
-            bytes_ = int(abs(50000 + 30000 * np.random.randn()))
-            packets = int(abs(500 + 300 * np.random.randn()))
-            duration = abs(0.01 + 0.2 * abs(np.random.randn()))
-            bps = bytes_ / duration
-            pps = packets / duration
-            dst_port = int(np.random.choice([80, 443, 8080]))
-            protocol_tcp = 1
-            label = 1
-        rows.append({'bytes': abs(int(bytes_)), 'packets': abs(int(packets)), 'duration': float(duration), 'bps': float(bps), 'pps': float(pps), 'dst_port': int(dst_port), 'protocol_tcp': int(protocol_tcp), 'label': label})
-    return pd.DataFrame(rows)
-
-# ------------------------ Broadcast / SSE ------------------------
-
-def broadcast(message: Dict):
-    # simple in-memory broadcast; if we had Redis pub/sub we'd publish
-    payload = json.dumps(message, default=str)
-    for lst in listeners[:]:
-        try:
-            lst['queue'].append(payload)
-        except Exception:
-            listeners.remove(lst)
-
-@app.get('/stream')
-def stream(request: Request):
-    def event_generator():
-        q: List[str] = []
-        token = str(uuid.uuid4())
-        listeners.append({'id': token, 'queue': q})
-        try:
-            while True:
-                if await_disconnect(request):
-                    break
-                while q:
-                    data = q.pop(0)
-                    yield f'data: {data}\n\n'
-                time.sleep(0.5)
-        finally:
-            # remove listener
-            for l in listeners[:]:
-                if l.get('id') == token:
-                    listeners.remove(l)
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
-
-# small helper because Request.is_disconnected is awaitable
-async def await_disconnect(request: Request):
-    try:
-        return await request.is_disconnected()
-    except Exception:
-        return True
-
-# ------------------------ Serialization helpers ------------------------
-
-def serialize_flow(f: Flow):
-    return {
-        'id': f.id,
-        'domain': f.domain,
-        'src_ip': f.src_ip,
-        'dst_ip': f.dst_ip,
-        'src_port': f.src_port,
-        'dst_port': f.dst_port,
-        'protocol': f.protocol,
-        'bytes': f.bytes,
-        'packets': f.packets,
-        'duration': f.duration,
-        'timestamp': f.timestamp.isoformat(),
-        'score': f.score,
-        'is_malicious': f.is_malicious
-    }
-
-def serialize_alert(a: Alert):
-    return {
-        'id': a.id,
-        'flow_id': a.flow_id,
-        'domain': a.domain,
-        'src_ip': a.src_ip,
-        'score': a.score,
-        'created_at': a.created_at.isoformat(),
-        'handled': a.handled
-    }
-
-# ------------------------ API Endpoints ------------------------
-
-class RegisterReq(BaseModel):
-    email: str
-    password: str
+# ----- Simple user & domain API -----
 
 @app.post('/api/register')
-def api_register(req: RegisterReq):
-    db = next(get_db())
-    if db.query(User).filter(User.email == req.email).first():
-        raise HTTPException(status_code=400, detail='Email already exists')
-    u = User(email=req.email, password_hash=hash_pw(req.password), is_admin=False)
-    db.add(u)
-    db.commit()
-    return {"status": "ok"}
-
-class LoginReq(BaseModel):
-    email: str
-    password: str
+async def register(email: str = Form(...), password: str = Form(...), role: str = Form('employee'), org: str = Form('personal')):
+    pwd = hash_password(password)
+    try:
+        cur.execute('INSERT INTO users (email, password_hash, role, org) VALUES (?, ?, ?, ?)', (email, pwd, role, org))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return JSONResponse({"error": "email_exists"}, status_code=400)
+    token = create_access_token({"sub": email, "role": role, "org": org})
+    return {"access_token": token, "token_type": "bearer"}
 
 @app.post('/api/login')
-def api_login(req: LoginReq):
-    db = next(get_db())
-    u = db.query(User).filter(User.email == req.email).first()
-    if not u or u.password_hash != hash_pw(req.password):
-        raise HTTPException(status_code=401, detail='Invalid credentials')
-    token = create_token(u.email)
-    return {"token": token, "email": u.email, "is_admin": u.is_admin}
+async def login(email: str = Form(...), password: str = Form(...)):
+    pwd = hash_password(password)
+    cur.execute('SELECT id, role, org FROM users WHERE email=? AND password_hash=?', (email, pwd))
+    row = cur.fetchone()
+    if not row:
+        return JSONResponse({"error": "invalid_credentials"}, status_code=401)
+    token = create_access_token({"sub": email, "role": row[1], "org": row[2]})
+    return {"access_token": token, "token_type": "bearer"}
 
-@app.post('/api/domains')
-def add_domain(domain: str = Form(...), token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    if db.query(Domain).filter(Domain.domain == domain).first():
-        raise HTTPException(status_code=400, detail='Domain already registered')
-    d = Domain(user_email=token.email, domain=domain)
-    db.add(d)
-    db.commit()
-    return {"status": "ok", "domain": domain}
+@app.post('/api/register_domain')
+async def register_domain(domain: str = Form(...), token: str = Form(...)):
+    # token used to associate with JWT in headers in UI (bearer). Here token param is optional.
+    # Generate domain monitoring token for agents
+    dtoken = base64.urlsafe_b64encode(secrets.token_bytes(16)).decode()
+    cur.execute('INSERT INTO domains (org, domain, token, verified) VALUES (?, ?, ?, ?)', ("unknown", domain, dtoken, 0))
+    conn.commit()
+    return {"domain": domain, "monitor_token": dtoken}
 
 @app.get('/api/domains')
-def list_domains(token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    ds = db.query(Domain).filter(Domain.user_email == token.email).all()
-    return {"domains": [d.domain for d in ds]}
+async def list_domains():
+    cur.execute('SELECT id, org, domain, token, verified FROM domains')
+    rows = cur.fetchall()
+    return [{"id": r[0], "org": r[1], "domain": r[2], "token": r[3], "verified": r[4]} for r in rows]
 
-@app.post('/api/start_agent')
-def start_agent(domain: str = Form(...), token: TokenData = Depends(verify_token)):
-    # start a background thread to simulate flows for this domain
-    t = threading.Thread(target=agent_thread, args=(domain,), daemon=True)
-    t.start()
-    return {"status": "agent_started", "domain": domain}
+# ----- Flow ingestion & ML scoring -----
 
-def agent_thread(domain: str):
-    global SIM_RUNNING
-    SIM_RUNNING = True
-    while SIM_RUNNING:
-        rec = synthetic_flow(domain)
-        ingest_flow_record(rec)
-        time.sleep(SIMULATION_INTERVAL)
+# In-memory ML models
+models = {
+    'rf': None,
+    'iso': None,
+    'scaler': None
+}
 
-@app.get('/api/flows')
-def get_flows(limit: int = 100, token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    fs = db.query(Flow).order_by(Flow.timestamp.desc()).limit(limit).all()
-    return {"flows": [serialize_flow(f) for f in fs]}
+FEATURE_COLUMNS = ['packet_count', 'byte_count', 'protocol_num']
 
-@app.get('/api/alerts')
-def get_alerts(token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    a = db.query(Alert).order_by(Alert.created_at.desc()).limit(200).all()
-    return {"alerts": [serialize_alert(x) for x in a]}
+def extract_features(flow: Dict[str, Any]) -> List[float]:
+    # flow example: {src_ip, dst_ip, protocol, packet_count, byte_count}
+    proto_map = {'TCP':6, 'UDP':17, 'ICMP':1}
+    proto_num = proto_map.get(flow.get('protocol','TCP').upper(), 0)
+    pkt = int(flow.get('packet_count', 0))
+    bytec = int(flow.get('byte_count', 0))
+    return [pkt, bytec, proto_num]
+
+@app.post('/api/ingest_flow')
+async def ingest_flow(domain: str = Form(...), src_ip: str = Form(...), dst_ip: str = Form(...), protocol: str = Form('TCP'), packet_count: int = Form(0), byte_count: int = Form(0)):
+    ts = int(time.time())
+    features = extract_features({'protocol': protocol, 'packet_count': packet_count, 'byte_count': byte_count})
+    score = score_features(features)
+    cur.execute('INSERT INTO flows (domain, src_ip, dst_ip, protocol, packet_count, byte_count, ts, features_json, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (domain, src_ip, dst_ip, protocol, packet_count, byte_count, ts, json.dumps(features), float(score)))
+    conn.commit()
+    # broadcast via websocket (simple pub)
+    broadcaster.broadcast({'type':'flow', 'domain': domain, 'src_ip': src_ip, 'score': score, 'ts': ts})
+    # Auto-block if score above threshold
+    if score >= 0.9:
+        block_ip(domain, src_ip, duration_seconds=3600, reason='auto-high-score', by='system')
+    return {'status': 'ok', 'score': score}
+
+# ----- Blocking API -----
+
+def block_ip(domain: str, ip: str, duration_seconds: int = 3600, reason: str = 'manual', by: str = 'admin'):
+    start_ts = int(time.time())
+    end_ts = start_ts + duration_seconds
+    cur.execute('INSERT INTO blocks (domain, ip, start_ts, end_ts, reason, by) VALUES (?, ?, ?, ?, ?, ?)', (domain, ip, start_ts, end_ts, reason, by))
+    conn.commit()
+    broadcaster.broadcast({'type':'block', 'domain': domain, 'ip': ip, 'start_ts': start_ts, 'end_ts': end_ts, 'reason': reason})
 
 @app.post('/api/block')
-def block_ip(src_ip: str = Form(...), domain: str = Form(...), minutes: int = Form(60), reason: str = Form('auto'), token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    br = BlockRule(src_ip=src_ip, domain=domain, expires_at=datetime.utcnow() + timedelta(minutes=minutes), reason=reason)
-    db.add(br)
-    db.commit()
-    # In production, call Cloudflare/AWS WAF API or iptables here. We simulate.
-    broadcast({"type": "block", "src_ip": src_ip, "domain": domain})
-    return {"status": "blocked", "src_ip": src_ip}
+async def api_block(domain: str = Form(...), ip: str = Form(...), duration_seconds: int = Form(3600), reason: str = Form('manual'), by: str = Form('admin')):
+    block_ip(domain, ip, duration_seconds, reason, by)
+    return {'status': 'blocked', 'ip': ip}
+
+@app.post('/api/unblock')
+async def api_unblock(block_id: int = Form(...)):
+    cur.execute('DELETE FROM blocks WHERE id=?', (block_id,))
+    conn.commit()
+    return {'status': 'unblocked'}
 
 @app.get('/api/blocks')
-def list_blocks(token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    bs = db.query(BlockRule).order_by(BlockRule.created_at.desc()).all()
-    out = []
-    for b in bs:
-        out.append({'id': b.id, 'src_ip': b.src_ip, 'domain': b.domain, 'expires_at': b.expires_at.isoformat(), 'reason': b.reason})
-    return {"blocks": out}
+async def list_blocks():
+    cur.execute('SELECT id, domain, ip, start_ts, end_ts, reason, by FROM blocks')
+    rows = cur.fetchall()
+    return [{'id': r[0], 'domain': r[1], 'ip': r[2], 'start_ts': r[3], 'end_ts': r[4], 'reason': r[5], 'by': r[6]} for r in rows]
 
-@app.get('/api/export_alerts')
-def export_alerts(token: TokenData = Depends(verify_token)):
-    db = next(get_db())
-    a = db.query(Alert).order_by(Alert.created_at.desc()).all()
-    rows = []
-    for x in a:
-        rows.append([x.id, x.domain, x.src_ip, x.score, x.created_at.isoformat(), x.handled])
-    df = pd.DataFrame(rows, columns=['id', 'domain', 'src_ip', 'score', 'created_at', 'handled'])
-    csv = df.to_csv(index=False)
-    return StreamingResponse(iter([csv]), media_type='text/csv', headers={"Content-Disposition": "attachment; filename=alerts.csv"})
+# ----- ML: train & score -----
 
-# ------------------------ Simple Dashboard Page ------------------------
+def train_models(data_path=DATA_PATH):
+    try:
+        df = pd.read_csv(data_path)
+    except Exception as e:
+        print('Failed to load dataset:', e)
+        return {'error': 'no_dataset'}
+    # NOTE: CC-DoS dataset will require domain-specific parsing. Here we assume some columns exist.
+    # This is a simplified pipeline: pick packet_count, byte_count, protocol (as num), label (attack:1/0)
+    if 'label' not in df.columns:
+        # try to guess or map
+        if 'attacked' in df.columns:
+            df['label'] = df['attacked'].astype(int)
+        else:
+            print('Dataset missing label column. Please preprocess CC-DoS into CSV with a "label" column.')
+            return {'error': 'no_label'}
+    def proto_map(v):
+        try:
+            return int(v)
+        except:
+            return 6
+    X = df[['packet_count','byte_count']].copy()
+    X['protocol_num'] = df['protocol'].apply(proto_map) if 'protocol' in df.columns else 6
+    y = df['label']
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(X[FEATURE_COLUMNS])
+    X_train, X_test, y_train, y_test = train_test_split(Xs, y, test_size=0.2, random_state=42)
+    rf = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf.fit(X_train, y_train)
+    iso = IsolationForest(contamination=0.01, random_state=42)
+    iso.fit(X_train)
+    # save
+    joblib.dump(rf, os.path.join(MODEL_PATH, 'rf.joblib'))
+    joblib.dump(iso, os.path.join(MODEL_PATH, 'iso.joblib'))
+    joblib.dump(scaler, os.path.join(MODEL_PATH, 'scaler.joblib'))
+    models['rf'] = rf
+    models['iso'] = iso
+    models['scaler'] = scaler
+    print('Training complete. Models saved to', MODEL_PATH)
+    return {'status': 'trained'}
 
-@app.get('/', response_class=HTMLResponse)
-def index():
-    html = """
+def load_models():
+    try:
+        models['rf'] = joblib.load(os.path.join(MODEL_PATH, 'rf.joblib'))
+        models['iso'] = joblib.load(os.path.join(MODEL_PATH, 'iso.joblib'))
+        models['scaler'] = joblib.load(os.path.join(MODEL_PATH, 'scaler.joblib'))
+        print('Models loaded')
+    except Exception as e:
+        print('Could not load models:', e)
+
+load_models()
+
+def score_features(features: List[float]) -> float:
+    try:
+        scaler = models.get('scaler')
+        rf = models.get('rf')
+        iso = models.get('iso')
+        X = np.array(features).reshape(1, -1)
+        if scaler:
+            Xs = scaler.transform(X)
+        else:
+            Xs = X
+        probs = rf.predict_proba(Xs)[0][1] if rf else 0.0
+        iso_score = 0.5
+        if iso:
+            iso_raw = iso.decision_function(Xs)[0]
+            # convert decision function to 0-1 like anomaly score
+            iso_score = 1.0 - (1.0 / (1.0 + np.exp(-iso_raw)))
+        # combine
+        score = (0.7 * probs) + (0.3 * iso_score)
+        return float(score)
+    except Exception as e:
+        print('scoring error', e)
+        return 0.0
+
+@app.post('/api/train_models')
+async def api_train_models():
+    res = train_models()
+    return res
+
+# ----- Simple Gemini chatops placeholder -----
+
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
+def query_gemini(prompt: str):
+    # Placeholder: implement according to Google's GenAI API docs with GEMINI_API_KEY.
+    # Example: call REST endpoint with auth and send prompt. Return assistant response.
+    if not GEMINI_API_KEY:
+        return "Gemini API key not set. Set GEMINI_API_KEY env var and implement the REST call in query_gemini()."
+    # TODO: implement real call
+    return f"[Gemini placeholder reply] I received your prompt: {prompt[:200]}"
+
+@app.post('/api/chat')
+async def chat_endpoint(request: Request):
+    body = await request.json()
+    prompt = body.get('prompt', '')
+    resp = query_gemini(prompt)
+    return {'reply': resp}
+
+# ----- WebSocket broadcaster for realtime UI -----
+
+class Broadcaster:
+    def __init__(self):
+        self.connections: List[WebSocket] = []
+    async def connect(self, ws: WebSocket):
+        await ws.accept()
+        self.connections.append(ws)
+    def disconnect(self, ws: WebSocket):
+        try:
+            self.connections.remove(ws)
+        except:
+            pass
+    def broadcast(self, message: dict):
+        # spawn thread to avoid blocking
+        for ws in list(self.connections):
+            try:
+                threading.Thread(target=lambda w, m: self._send_sync(w, m), args=(ws, message), daemon=True).start()
+            except Exception:
+                pass
+    def _send_sync(self, ws: WebSocket, message: dict):
+        try:
+            import asyncio
+            asyncio.run(ws.send_json(message))
+        except Exception:
+            try:
+                self.disconnect(ws)
+            except:
+                pass
+
+broadcaster = Broadcaster()
+
+@app.websocket('/ws')
+async def websocket_endpoint(ws: WebSocket):
+    await broadcaster.connect(ws)
+    try:
+        while True:
+            data = await ws.receive_text()
+            # echo or handle
+            await ws.send_text(f'ack:{data}')
+    except WebSocketDisconnect:
+        broadcaster.disconnect(ws)
+
+# ----- Serve a simple single-page UI -----
+
+INDEX_HTML = r"""
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>DDOS Defender — Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shield-AI — MVP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body{font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#0f172a; color:#e6eef8; margin:0;}
-    .top{display:flex;justify-content:space-between;padding:12px 20px;align-items:center;background:#071025}
-    .card{background:#0b1220;border-radius:10px;padding:12px;margin:12px}
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:12px;padding:12px}
-    button{background:#2563eb;border:none;padding:8px 12px;border-radius:8px;color:white}
-    input, select{padding:8px;border-radius:6px;border:1px solid #23314a;background:#061122;color:white}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #102030}
-    .muted{color:#9fb0cf}
-    .small{font-size:12px}
+    :root{--bg:#f5f7fb;--fg:#0b1220;--card:#fff}
+    .dark{--bg:#0b1220;--fg:#e6eef8;--card:#0e1620}
+    body{background:var(--bg);color:var(--fg);font-family:Inter,Segoe UI,system-ui,Arial;margin:0;padding:0}
+    header{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg, rgba(63,94,251,0.08), rgba(252,70,107,0.04));}
+    .container{padding:20px}
+    .card{background:var(--card);border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+    .small{font-size:13px;color:rgba(0,0,0,0.6)}
+    .theme-toggle{cursor:pointer;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    /* chat bubble */
+    #helpBtn{position:fixed;right:18px;bottom:18px;border-radius:50%;width:64px;height:64px;border:none;background:#007bff;color:#fff;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,0.2);}
+    #chatBox{position:fixed;right:18px;bottom:90px;width:340px;max-height:480px;display:none;flex-direction:column}
+    #chatBox .messages{flex:1;overflow:auto;padding:8px}
+    #chatBox textarea{width:100%;box-sizing:border-box;height:80px}
+    .btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
   </style>
 </head>
 <body>
-  <div class="top"><div><strong>DDOS Defender</strong> <span class="muted small">single-file prototype</span></div><div id="auth_area"></div></div>
-  <div style="display:flex;gap:12px;">
-    <div style="flex:1;padding:12px">
-      <div class="card" id="controls">
-        <h3>Controls</h3>
-        <div id="auth_forms">
-          <div id="register_box">
-            <input id="reg_email" placeholder="email" /> <input id="reg_pw" type="password" placeholder="password" /> <button onclick="register()">Register</button>
-          </div>
-          <div style="height:8px"></div>
-          <div id="login_box">
-            <input id="login_email" placeholder="email" /> <input id="login_pw" type="password" placeholder="password" /> <button onclick="login()">Login</button>
-          </div>
+  <header>
+    <div style="display:flex;align-items:center;gap:12px"><h3 style="margin:0">Shield-AI</h3><div class="small">MVP — DDoS detection & defense</div></div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="theme-toggle" id="toggleTheme">Toggle theme</button><button class="btn" id="trainBtn">Train Models</button></div>
+  </header>
+  <div class="container">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h4>Live Traffic</h4>
+          <div id="liveFeed" class="small">No activity yet.</div>
         </div>
-        <div style="height:12px"></div>
-        <div>
-          <input id="domain_input" placeholder="example.com" /> <button onclick="addDomain()">Add Domain</button> <button onclick="startAgent()">Start Agent</button>
+        <div class="card">
+          <h4>Actions</h4>
+          <div style="display:flex;gap:8px"><input id="domainInput" placeholder="domain.tld"/><input id="ipInput" placeholder="1.2.3.4"/><button class="btn" id="blockBtn">Block IP</button></div>
         </div>
-        <div style="height:12px"></div>
-        <div>
-          <button onclick="train()">Train Model (simulate)</button> <span id="train_status" class="muted small"></span>
+        <div class="card">
+          <h4>Upload CC-DoS CSV</h4>
+          <form id="uploadForm">
+            <input type="file" name="file" id="fileInput" accept=".csv" />
+            <button class="btn" type="submit">Upload</button>
+          </form>
+          <div class="small">Place a preprocessed CC-DoS 2019M CSV and train the model.</div>
         </div>
       </div>
-
-      <div class="card">
-        <h3>Live Flows</h3>
-        <canvas id="chart" height="120"></canvas>
-        <div style="height:12px"></div>
-        <h4>Recent flows</h4>
-        <table id="flows_table"><thead><tr><th>time</th><th>src</th><th>bytes</th><th>pkts</th><th>score</th></tr></thead><tbody></tbody></table>
-      </div>
-
-      <div class="card">
-        <h3>Alerts</h3>
-        <table id="alerts_table"><thead><tr><th>time</th><th>src</th><th>domain</th><th>score</th><th>action</th></tr></thead><tbody></tbody></table>
-      </div>
-    </div>
-
-    <div style="width:420px;padding:12px">
-      <div class="card">
-        <h3>Blocks</h3>
-        <div id="blocks_list"></div>
-      </div>
-
-      <div class="card">
-        <h3>Model</h3>
-        <div id="model_info">Not trained</div>
-      </div>
-
-      <div class="card">
-        <h3>Export</h3>
-        <button onclick="exportAlerts()">Export Alerts CSV</button>
+      <div>
+        <div class="card">
+          <h4>Dashboard</h4>
+          <div>Active blocks: <span id="blocksCount">0</span></div>
+          <div>Recent Alerts: <ul id="alerts"></ul></div>
+        </div>
+        <div class="card">
+          <h4>Admin Panel</h4>
+          <div class="small">Register domains, manage users in a full app. This MVP focuses on core flow ingestion and scoring.</div>
+        </div>
       </div>
     </div>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <button id="helpBtn">?</button>
+  <div id="chatBox" class="card" style="display:flex">
+    <div style="display:flex;flex-direction:column;width:100%">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px"><strong>Need help?</strong><button id="closeChat">X</button></div>
+      <div class="messages" id="messages"></div>
+      <textarea id="prompt" placeholder="Describe the incident or ask for advice..."></textarea>
+      <div style="display:flex;gap:8px;padding:8px"><button id="sendPrompt" class="btn">Send</button><button id="autoMit" class="btn">Auto-Mitigate</button></div>
+    </div>
+  </div>
+
 <script>
-let token = null;
-let chart=null;
-let flowCounts = [];
-
-function setAuthArea(){
-  const el = document.getElementById('auth_area');
-  if(token){
-    el.innerHTML = '<button onclick="logout()">Logout</button>'
-    document.getElementById('auth_forms').style.display='none';
-  } else {
-    el.innerHTML = ''
-    document.getElementById('auth_forms').style.display='block';
+  const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+  ws.onmessage = (ev) => {
+    try{ const d=JSON.parse(ev.data); if(d.type==='flow'){ const el=document.getElementById('liveFeed'); el.innerText = `Flow from ${d.src_ip} score=${d.score.toFixed(3)} at ${new Date(d.ts*1000).toLocaleTimeString()}`; const li=document.createElement('li'); li.innerText = `${d.src_ip} score=${d.score.toFixed(3)}`; document.getElementById('alerts').prepend(li);}
+      if(d.type==='block'){ document.getElementById('blocksCount').innerText = parseInt(document.getElementById('blocksCount').innerText || '0') + 1; }
+    }catch(e){ console.log('ws msg',ev.data)}
+  };
+  document.getElementById('helpBtn').onclick = ()=>{ document.getElementById('chatBox').style.display='flex'; }
+  document.getElementById('closeChat').onclick = ()=>{ document.getElementById('chatBox').style.display='none'; }
+  document.getElementById('sendPrompt').onclick = async ()=>{
+    const p = document.getElementById('prompt').value;
+    const res = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p})});
+    const j = await res.json();
+    const m=document.getElementById('messages');
+    const u=document.createElement('div'); u.innerText='You: '+p; m.appendChild(u);
+    const a=document.createElement('div'); a.innerText='Assistant: '+j.reply; m.appendChild(a);
   }
-}
-
-function register(){
-  const email=document.getElementById('reg_email').value;
-  const pw=document.getElementById('reg_pw').value;
-  fetch('/api/register',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,pw:pw})})
-  .then(r=>r.json()).then(x=>alert(JSON.stringify(x)))
-}
-
-function login(){
-  const email=document.getElementById('login_email').value;
-  const pw=document.getElementById('login_pw').value;
-  fetch('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:pw})})
-  .then(r=>r.json()).then(x=>{token=x.token; setAuthArea();})
-}
-
-function logout(){ token=null; setAuthArea(); }
-
-function addDomain(){
-  const domain=document.getElementById('domain_input').value;
-  const f=new FormData(); f.append('domain',domain);
-  fetch('/api/domains',{method:'POST',headers: token?{'Authorization':'Bearer '+token}:undefined, body:f}).then(r=>r.json()).then(x=>alert(JSON.stringify(x)))
-}
-
-function startAgent(){
-  const domain=document.getElementById('domain_input').value;
-  const f=new FormData(); f.append('domain',domain);
-  fetch('/api/start_agent',{method:'POST',headers: token?{'Authorization':'Bearer '+token}:undefined, body:f}).then(r=>r.json()).then(x=>alert(JSON.stringify(x)))
-}
-
-function train(){
-  document.getElementById('train_status').innerText='training...';
-  fetch('/train',{method:'POST'}).then(r=>r.json()).then(x=>{ document.getElementById('model_info').innerText='Trained (simulated). accuracy='+ (x.accuracy?x.accuracy:'n/a'); document.getElementById('train_status').innerText='done'; })
-}
-
-function exportAlerts(){
-  fetch('/api/export_alerts',{headers: token?{'Authorization':'Bearer '+token}:undefined}).then(r=>r.blob()).then(b=>{const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='alerts.csv'; a.click();})
-}
-
-function initChart(){
-  const ctx=document.getElementById('chart');
-  chart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:'Flows per second',data:[],fill:false}]},options:{scales:{y:{beginAtZero:true}}}});
-}
-
-function addFlowRow(f){
-  const tb=document.querySelector('#flows_table tbody');
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${new Date(f.timestamp).toLocaleTimeString()}</td><td>${f.src_ip}</td><td>${f.bytes}</td><td>${f.packets}</td><td>${(f.score||0).toFixed(2)}</td>`;
-  tb.prepend(tr);
-  while(tb.children.length>50) tb.removeChild(tb.lastChild);
-}
-
-function addAlertRow(a){
-  const tb=document.querySelector('#alerts_table tbody');
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${new Date(a.created_at).toLocaleTimeString()}</td><td>${a.src_ip}</td><td>${a.domain}</td><td>${a.score.toFixed(2)}</td><td><button onclick="block('${a.src_ip}')">Block</button></td>`;
-  tb.prepend(tr);
-}
-
-function block(ip){
-  const f=new FormData(); f.append('src_ip', ip); f.append('domain', document.getElementById('domain_input').value || 'unknown');
-  fetch('/api/block',{method:'POST',headers: token?{'Authorization':'Bearer '+token}:undefined, body:f}).then(r=>r.json()).then(x=>alert(JSON.stringify(x)));
-}
-
-function addBlock(b){
-  const el=document.getElementById('blocks_list');
-  const d=document.createElement('div'); d.innerText=`${b.src_ip} -> ${b.domain} (expires ${new Date(b.expires_at).toLocaleString()})`; el.prepend(d);
-}
-
-function connectSSE(){
-  const s=new EventSource('/stream');
-  s.onmessage = function(e){
-    const data = JSON.parse(e.data);
-    if(data.type==='flow'){ addFlowRow(data.flow); updateChart(); }
-    if(data.type==='alert'){ addAlertRow(data.alert); }
-    if(data.type==='block'){ addBlock(data); }
+  document.getElementById('blockBtn').onclick = async ()=>{
+    const domain = document.getElementById('domainInput').value; const ip = document.getElementById('ipInput').value;
+    const fd = new FormData(); fd.append('domain', domain); fd.append('ip', ip);
+    const r = await fetch('/api/block',{method:'POST',body:fd}); const j = await r.json(); alert(JSON.stringify(j));
   }
-}
-
-function updateChart(){
-  const now = Date.now();
-  const last = chart.data.labels.length?chart.data.labels[chart.data.labels.length-1]:0;
-  chart.data.labels.push(new Date().toLocaleTimeString());
-  const cnt = Math.floor(Math.random()*5)+1; // placeholder
-  chart.data.datasets[0].data.push(cnt);
-  if(chart.data.labels.length>30){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
-  chart.update();
-}
-
-window.onload = function(){ initChart(); setAuthArea(); connectSSE(); }
+  document.getElementById('trainBtn').onclick = async ()=>{
+    const r = await fetch('/api/train_models',{method:'POST'}); const j = await r.json(); alert(JSON.stringify(j));
+  }
+  document.getElementById('uploadForm').onsubmit = async (e)=>{
+    e.preventDefault(); const f = document.getElementById('fileInput').files[0]; if(!f) return alert('no file');
+    const fd = new FormData(); fd.append('file', f);
+    const r = await fetch('/api/upload_dataset',{method:'POST',body:fd}); const j = await r.json(); alert(JSON.stringify(j));
+  }
+  document.getElementById('toggleTheme').onclick = ()=>{ document.body.classList.toggle('dark'); }
 </script>
 </body>
 </html>
-    """
-    return HTMLResponse(content=html)
+"""
 
-# ------------------------ Bootstrapping: create admin user if none ------------------------
+@app.get('/')
+async def index():
+    return HTMLResponse(INDEX_HTML)
 
-def bootstrap_admin():
-    db = next(get_db())
-    if not db.query(User).filter(User.is_admin==True).first():
-        u = User(email='admin@local', password_hash=hash_pw('admin123'), is_admin=True)
-        db.add(u)
-        db.commit()
+@app.post('/api/upload_dataset')
+async def upload_dataset(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        os.makedirs('data', exist_ok=True)
+        path = os.path.join('data', 'cc_ddos_2019m.csv')
+        with open(path, 'wb') as f:
+            f.write(contents)
+        return {'status': 'saved', 'path': path}
+    except Exception as e:
+        return JSONResponse({'error': str(e)}, status_code=500)
 
-bootstrap_admin()
+# ----- Simple static route for download example -----
+@app.get('/download_report')
+async def download_report():
+    # simple demo report
+    report_path = 'report_example.html'
+    with open(report_path, 'w') as f:
+        f.write('<h1>Shield-AI Report</h1><p>Example.</p>')
+    return FileResponse(report_path, media_type='text/html', filename='shield_report.html')
 
-# ------------------------ End of file ------------------------
+# ----- Run server -----
+if __name__ == '__main__':
+    print('Starting Shield-AI MVP on http://127.0.0.1:8000')
+    uvicorn.run('shield_ai_mvp:app', host='0.0.0.0', port=8000, reload=True)
