@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Executive Security View - Shield-AI Dashboard</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fshieldai6924back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background text-text-primary font-inter">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-surface border-b border-cyber px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo and Brand -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-primary" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2zm0 4.13L25 9.87v7.13c0 6.43-4.24 12.13-9 13.93C11.24 29.13 7 23.43 7 17V9.87L16 6.13z"/>
+                        <circle cx="16" cy="16" r="6" fill="currentColor"/>
+                    </svg>
+                    <span class="text-xl font-bold text-primary">Shield-AI</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <a href="security_operations_center.html" class="text-text-secondary hover:text-primary transition-colors">SOC Dashboard</a>
+                    <a href="threat_intelligence_hub.html" class="text-text-secondary hover:text-primary transition-colors">Threat Intel</a>
+                    <a href="network_traffic_monitor.html" class="text-text-secondary hover:text-primary transition-colors">Network Monitor</a>
+                    <a href="executive_security_view.html" class="text-primary font-medium border-b-2 border-primary pb-1">Executive View</a>
+                </div>
+            </div>
+            
+            <!-- Executive Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Reporting Period Selector -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>Q4 2024</option>
+                    <option>Q3 2024</option>
+                    <option>Q2 2024</option>
+                    <option>Q1 2024</option>
+                    <option>FY 2024</option>
+                </select>
+                
+                <!-- Department Comparison -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>All Departments</option>
+                    <option>IT Operations</option>
+                    <option>Finance</option>
+                    <option>HR</option>
+                    <option>Sales</option>
+                </select>
+                
+                <!-- Compliance Framework -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>SOC 2 Type II</option>
+                    <option>ISO 27001</option>
+                    <option>NIST Framework</option>
+                    <option>PCI DSS</option>
+                </select>
+                
+                <!-- Export Options -->
+                <div class="flex items-center space-x-2">
+                    <button class="bg-primary text-background px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <span>Export Report</span>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center space-x-2">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Executive Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                    <span class="text-sm text-text-secondary hidden md:block">Sarah Johnson</span>
+                    <span class="text-xs text-text-muted hidden lg:block">CISO</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Executive Dashboard Content -->
+    <main class="p-6 space-y-8">
+        <!-- Executive Summary Header -->
+        <section class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-text-primary">Executive Security Dashboard</h1>
+                    <p class="text-text-secondary mt-1">Strategic cybersecurity intelligence and compliance overview</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-text-muted">Last Updated</div>
+                        <div class="text-sm font-medium text-text-primary">Oct 4, 2024 05:37</div>
+                    </div>
+                    <button class="bg-surface-hover text-text-secondary px-3 py-2 rounded-lg text-sm hover:text-text-primary transition-colors flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Executive KPI Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Security Posture Score -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Security Posture Score</h3>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-success rounded-full"></div>
+                        <span class="text-xs text-success">Excellent</span>
+                    </div>
+                </div>
+                <div class="flex items-end space-x-3 mb-4">
+                    <span class="text-4xl font-bold text-success">92.4</span>
+                    <div class="flex items-center space-x-1 mb-2">
+                        <svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        <span class="text-success text-sm font-medium">+2.1</span>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">vs. Industry Avg</span>
+                        <span class="text-success">+15.3%</span>
+                    </div>
+                    <div class="w-full bg-background rounded-full h-2">
+                        <div class="bg-success h-2 rounded-full" style="width: 92.4%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incident Response Effectiveness -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Response Effectiveness</h3>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span class="text-xs text-primary">Strong</span>
+                    </div>
+                </div>
+                <div class="flex items-end space-x-3 mb-4">
+                    <span class="text-4xl font-bold text-primary">96.8%</span>
+                    <div class="flex items-center space-x-1 mb-2">
+                        <svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        <span class="text-success text-sm font-medium">+1.2%</span>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Avg Response Time</span>
+                        <span class="text-primary">2.3 min</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Incidents Resolved</span>
+                        <span class="text-text-primary">1,247/1,289</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Status -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Compliance Status</h3>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-warning rounded-full animate-pulse"></div>
+                        <span class="text-xs text-warning">Action Needed</span>
+                    </div>
+                </div>
+                <div class="flex items-end space-x-3 mb-4">
+                    <span class="text-4xl font-bold text-warning">87.3%</span>
+                    <div class="flex items-center space-x-1 mb-2">
+                        <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17 14l-5 5-5-5z"/>
+                        </svg>
+                        <span class="text-error text-sm font-medium">-0.8%</span>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Controls Passing</span>
+                        <span class="text-warning">157/180</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Next Audit</span>
+                        <span class="text-text-primary">Dec 15, 2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security ROI -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Security ROI</h3>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 bg-success rounded-full"></div>
+                        <span class="text-xs text-success">Positive</span>
+                    </div>
+                </div>
+                <div class="flex items-end space-x-3 mb-4">
+                    <span class="text-4xl font-bold text-success">$2.4M</span>
+                    <div class="flex items-center space-x-1 mb-2">
+                        <svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        <span class="text-success text-sm font-medium">+18.5%</span>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Cost Avoidance</span>
+                        <span class="text-success">$3.2M</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-text-muted">Investment</span>
+                        <span class="text-text-primary">$800K</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <section class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <!-- Security Trend Analysis (3 cols) -->
+            <div class="xl:col-span-3 bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Security Trends & Performance</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-success rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Threat Volume</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-primary rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Mitigation Rate</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-warning rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Cost per Incident</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trend Chart Placeholder -->
+                <div class="relative h-80 bg-background rounded-lg border border-cyber overflow-hidden mb-6">
+                    <canvas id="trendChart" class="w-full h-full"></canvas>
+                    <!-- Simulated Chart Overlay -->
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-10"></div>
+                    <div class="absolute top-4 left-4 space-y-2">
+                        <div class="text-xs text-text-muted">Q4 2024 Performance</div>
+                        <div class="text-xs text-success">Threat Reduction: -23.4%</div>
+                        <div class="text-xs text-primary">Mitigation Success: +12.8%</div>
+                        <div class="text-xs text-warning">Cost Efficiency: +31.2%</div>
+                    </div>
+                    
+                    <!-- Trend Indicators -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="grid grid-cols-3 gap-8">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-success mb-1">-23.4%</div>
+                                <div class="text-xs text-text-muted">Threat Volume</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-primary mb-1">+12.8%</div>
+                                <div class="text-xs text-text-muted">Success Rate</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-warning mb-1">$4,250</div>
+                                <div class="text-xs text-text-muted">Avg Cost/Incident</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quarterly Comparison -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-text-primary">Q4 2024</h4>
+                            <span class="text-xs text-success bg-success/10 px-2 py-1 rounded">Current</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Incidents</span>
+                                <span class="text-text-primary">1,289</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Resolved</span>
+                                <span class="text-success">96.8%</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Avg Cost</span>
+                                <span class="text-warning">$4,250</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-text-primary">Q3 2024</h4>
+                            <span class="text-xs text-text-muted bg-surface px-2 py-1 rounded">Previous</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Incidents</span>
+                                <span class="text-text-primary">1,683</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Resolved</span>
+                                <span class="text-primary">94.2%</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Avg Cost</span>
+                                <span class="text-error">$5,890</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-text-primary">YoY Change</h4>
+                            <span class="text-xs text-success bg-success/10 px-2 py-1 rounded">Improved</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Incidents</span>
+                                <span class="text-success">-23.4%</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Resolution</span>
+                                <span class="text-success">+2.6%</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Cost Reduction</span>
+                                <span class="text-success">-27.8%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Audit Status (1 col) -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Compliance Status</h2>
+                    <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                        View Details
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- SOC 2 Type II -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-success rounded-full"></div>
+                                <span class="text-sm font-medium text-text-primary">SOC 2 Type II</span>
+                            </div>
+                            <span class="text-xs text-success">Compliant</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Controls Passing</span>
+                                <span class="text-success">89/89</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Next Audit</span>
+                                <span class="text-text-primary">Mar 2025</span>
+                            </div>
+                            <div class="w-full bg-surface rounded-full h-1.5">
+                                <div class="bg-success h-1.5 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ISO 27001 -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-warning rounded-full animate-pulse"></div>
+                                <span class="text-sm font-medium text-text-primary">ISO 27001</span>
+                            </div>
+                            <span class="text-xs text-warning">In Progress</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Controls Passing</span>
+                                <span class="text-warning">68/91</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Target Date</span>
+                                <span class="text-text-primary">Dec 2024</span>
+                            </div>
+                            <div class="w-full bg-surface rounded-full h-1.5">
+                                <div class="bg-warning h-1.5 rounded-full" style="width: 74.7%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NIST Framework -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-primary rounded-full"></div>
+                                <span class="text-sm font-medium text-text-primary">NIST Framework</span>
+                            </div>
+                            <span class="text-xs text-primary">Ongoing</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Functions Mature</span>
+                                <span class="text-primary">4/5</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-muted">Maturity Level</span>
+                                <span class="text-text-primary">Level 3</span>
+                            </div>
+                            <div class="w-full bg-surface rounded-full h-1.5">
+                                <div class="bg-primary h-1.5 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Deadlines -->
+                <div class="mt-6 pt-4 border-t border-cyber">
+                    <h3 class="text-sm font-medium text-text-primary mb-3">Upcoming Deadlines</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-medium text-text-primary">ISO 27001 Gap Analysis</div>
+                                <div class="text-xs text-error">Due: Oct 15, 2024</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-warning rounded-full"></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-medium text-text-primary">SOC 2 Evidence Review</div>
+                                <div class="text-xs text-warning">Due: Nov 1, 2024</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-primary rounded-full"></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-medium text-text-primary">NIST Assessment</div>
+                                <div class="text-xs text-primary">Due: Dec 1, 2024</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Risk Assessment Matrix -->
+        <section class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-text-primary">Risk Assessment Matrix</h2>
+                <div class="flex items-center space-x-4">
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>All Risk Categories</option>
+                        <option>Cyber Threats</option>
+                        <option>Operational Risks</option>
+                        <option>Compliance Risks</option>
+                    </select>
+                    <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Risk Matrix Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Risk Categories -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-medium text-text-secondary mb-4">Current Risk Landscape</h3>
+                    
+                    <!-- High Risk -->
+                    <div class="bg-error/10 border border-error/30 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-error rounded-full"></div>
+                                <span class="text-sm font-medium text-error">High Risk</span>
+                            </div>
+                            <span class="text-xs text-error">3 Items</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-xs text-text-primary">• Advanced Persistent Threats</div>
+                            <div class="text-xs text-text-primary">• Third-party Vendor Access</div>
+                            <div class="text-xs text-text-primary">• Legacy System Vulnerabilities</div>
+                        </div>
+                        <div class="mt-3 flex justify-between text-xs">
+                            <span class="text-text-muted">Business Impact</span>
+                            <span class="text-error">Critical</span>
+                        </div>
+                    </div>
+
+                    <!-- Medium Risk -->
+                    <div class="bg-warning/10 border border-warning/30 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-warning rounded-full"></div>
+                                <span class="text-sm font-medium text-warning">Medium Risk</span>
+                            </div>
+                            <span class="text-xs text-warning">7 Items</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-xs text-text-primary">• Employee Security Training</div>
+                            <div class="text-xs text-text-primary">• Mobile Device Management</div>
+                            <div class="text-xs text-text-primary">• Cloud Configuration Drift</div>
+                            <div class="text-xs text-text-muted">+ 4 more items</div>
+                        </div>
+                        <div class="mt-3 flex justify-between text-xs">
+                            <span class="text-text-muted">Business Impact</span>
+                            <span class="text-warning">Moderate</span>
+                        </div>
+                    </div>
+
+                    <!-- Low Risk -->
+                    <div class="bg-success/10 border border-success/30 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-success rounded-full"></div>
+                                <span class="text-sm font-medium text-success">Low Risk</span>
+                            </div>
+                            <span class="text-xs text-success">12 Items</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="text-xs text-text-primary">• Password Policy Compliance</div>
+                            <div class="text-xs text-text-primary">• Software Update Management</div>
+                            <div class="text-xs text-text-primary">• Physical Security Controls</div>
+                            <div class="text-xs text-text-muted">+ 9 more items</div>
+                        </div>
+                        <div class="mt-3 flex justify-between text-xs">
+                            <span class="text-text-muted">Business Impact</span>
+                            <span class="text-success">Minimal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic Recommendations -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-medium text-text-secondary mb-4">Strategic Recommendations</h3>
+                    
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-primary">1</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-text-primary mb-2">Enhance Threat Detection</h4>
+                                <p class="text-xs text-text-secondary mb-3">Implement advanced ML-based threat detection to reduce APT dwell time by 60%.</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-text-muted">Priority: High</span>
+                                    <span class="text-xs text-primary">Est. ROI: $1.2M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-6 h-6 bg-warning/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-warning">2</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-text-primary mb-2">Vendor Risk Management</h4>
+                                <p class="text-xs text-text-secondary mb-3">Strengthen third-party security assessments and continuous monitoring.</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-text-muted">Priority: High</span>
+                                    <span class="text-xs text-warning">Est. ROI: $800K</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-6 h-6 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-success">3</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-text-primary mb-2">Legacy System Modernization</h4>
+                                <p class="text-xs text-text-secondary mb-3">Accelerate migration of critical legacy systems to secure cloud infrastructure.</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-text-muted">Priority: Medium</span>
+                                    <span class="text-xs text-success">Est. ROI: $2.1M</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Trend Indicator -->
+                    <div class="bg-primary/10 border border-primary/30 rounded-lg p-4 mt-6">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M7 14l5-5 5 5z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-primary">Overall Risk Trending Down</span>
+                        </div>
+                        <p class="text-xs text-text-secondary">Risk exposure has decreased by 18.3% over the past quarter through proactive threat mitigation and improved security controls.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Chat Assistant -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="bg-primary text-background w-14 h-14 rounded-full shadow-cyber-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04 1.05 4.35L2 22l5.65-1.05C9.96 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zm0 18c-1.1 0-2.18-.25-3.15-.72L4 20l.72-4.85C4.25 14.18 4 13.1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="12" cy="12" r="1"/>
+            </svg>
+        </button>
+        <div class="absolute bottom-16 right-0 bg-surface border border-cyber rounded-lg p-2 shadow-cyber-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span class="text-xs text-text-secondary">Need Help?</span>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-cyber px-4 py-2">
+        <div class="flex items-center justify-around">
+            <a href="security_operations_center.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2z"/>
+                </svg>
+                <span class="text-xs">SOC</span>
+            </a>
+            <a href="threat_intelligence_hub.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs">Intel</span>
+            </a>
+            <a href="network_traffic_monitor.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+                <span class="text-xs">Network</span>
+            </a>
+            <a href="executive_security_view.html" class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                <span class="text-xs">Executive</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // Simulate real-time updates for executive metrics
+        function updateExecutiveMetrics() {
+            // Simulate security posture score updates
+            const postureScore = document.querySelector('.text-4xl.text-success');
+            if (postureScore) {
+                const current = parseFloat(postureScore.textContent);
+                const change = (Math.random() - 0.5) * 0.2;
+                const newScore = Math.max(85, Math.min(100, current + change));
+                postureScore.textContent = newScore.toFixed(1);
+            }
+        }
+
+        // Update executive metrics every 30 seconds
+        setInterval(updateExecutiveMetrics, 30000);
+
+        // Simulate compliance status updates
+        function updateComplianceStatus() {
+            const complianceElements = document.querySelectorAll('.animate-pulse');
+            complianceElements.forEach(element => {
+                if (Math.random() > 0.7) {
+                    element.classList.toggle('animate-pulse');
+                }
+            });
+        }
+
+        // Update compliance indicators every 45 seconds
+        setInterval(updateComplianceStatus, 45000);
+
+        // Export report functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportButton = document.querySelector('button:has(span:contains("Export Report"))');
+            if (exportButton) {
+                exportButton.addEventListener('click', function() {
+                    // Simulate report generation
+                    const originalText = this.querySelector('span').textContent;
+                    this.querySelector('span').textContent = 'Generating...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.querySelector('span').textContent = originalText;
+                        this.disabled = false;
+                        // In a real application, this would trigger a download
+                        alert('Executive Security Report generated successfully!');
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

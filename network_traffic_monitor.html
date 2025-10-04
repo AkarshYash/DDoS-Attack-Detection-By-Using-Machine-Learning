@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network Traffic Monitor - Shield-AI Dashboard</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fshieldai6924back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background text-text-primary font-inter">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-surface border-b border-cyber px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo and Brand -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-primary" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2zm0 4.13L25 9.87v7.13c0 6.43-4.24 12.13-9 13.93C11.24 29.13 7 23.43 7 17V9.87L16 6.13z"/>
+                        <circle cx="16" cy="16" r="6" fill="currentColor"/>
+                    </svg>
+                    <span class="text-xl font-bold text-primary">Shield-AI</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <a href="security_operations_center.html" class="text-text-secondary hover:text-primary transition-colors">SOC Dashboard</a>
+                    <a href="threat_intelligence_hub.html" class="text-text-secondary hover:text-primary transition-colors">Threat Intel</a>
+                    <a href="network_traffic_monitor.html" class="text-primary font-medium border-b-2 border-primary pb-1">Network Monitor</a>
+                    <a href="executive_security_view.html" class="text-text-secondary hover:text-primary transition-colors">Executive View</a>
+                </div>
+            </div>
+            
+            <!-- Global Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Network Segment Selector -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>All Segments</option>
+                    <option>DMZ Network</option>
+                    <option>Internal LAN</option>
+                    <option>Guest Network</option>
+                    <option>Server Farm</option>
+                </select>
+                
+                <!-- Traffic Type Filter -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>All Traffic</option>
+                    <option>HTTP/HTTPS</option>
+                    <option>DNS</option>
+                    <option>FTP/SFTP</option>
+                    <option>Other</option>
+                </select>
+                
+                <!-- Sampling Rate -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>1s Refresh</option>
+                    <option>5s Refresh</option>
+                    <option>10s Refresh</option>
+                    <option>30s Refresh</option>
+                </select>
+                
+                <!-- Baseline Comparison -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-success rounded-full animate-pulse mr-2"></div>
+                        <span class="text-xs text-text-secondary">Live</span>
+                    </div>
+                    <button class="bg-primary text-background px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+                        Baseline ON
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center space-x-2">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="User Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                    <span class="text-sm text-text-secondary hidden md:block">Alex Chen</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <main class="p-6 space-y-6">
+        <!-- Top KPI Metrics Row -->
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Total Bandwidth Utilization -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Bandwidth Utilization</h3>
+                    <div class="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                </div>
+                <div class="relative w-20 h-20 mx-auto mb-4">
+                    <!-- Gauge Visualization -->
+                    <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-surface-hover"/>
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-primary" stroke-dasharray="150" stroke-dashoffset="37.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-primary">75%</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-text-primary">2.4 Gbps</div>
+                    <div class="text-xs text-text-muted">of 3.2 Gbps capacity</div>
+                </div>
+            </div>
+
+            <!-- Packet Loss Percentage -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Packet Loss</h3>
+                    <div class="w-3 h-3 bg-success rounded-full"></div>
+                </div>
+                <div class="relative w-20 h-20 mx-auto mb-4">
+                    <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-surface-hover"/>
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-success" stroke-dasharray="150" stroke-dashoffset="147" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-success">0.2%</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-text-primary">Excellent</div>
+                    <div class="text-xs text-text-muted">< 1% threshold</div>
+                </div>
+            </div>
+
+            <!-- Latency Measurements -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Average Latency</h3>
+                    <div class="w-3 h-3 bg-warning rounded-full animate-pulse"></div>
+                </div>
+                <div class="relative w-20 h-20 mx-auto mb-4">
+                    <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-surface-hover"/>
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-warning" stroke-dasharray="150" stroke-dashoffset="75" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-warning">45ms</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-text-primary">Moderate</div>
+                    <div class="text-xs text-text-muted">Target: < 30ms</div>
+                </div>
+            </div>
+
+            <!-- Anomaly Detection Count -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Anomalies Detected</h3>
+                    <div class="w-3 h-3 bg-error rounded-full animate-pulse"></div>
+                </div>
+                <div class="relative w-20 h-20 mx-auto mb-4">
+                    <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-surface-hover"/>
+                        <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="6" fill="none" class="text-error" stroke-dasharray="150" stroke-dashoffset="112.5" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-error">12</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-text-primary">Last Hour</div>
+                    <div class="text-xs text-text-muted">+3 from baseline</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Visualization Area -->
+        <section class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <!-- Traffic Flow Chart (12 cols equivalent) -->
+            <div class="xl:col-span-3 bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Real-Time Traffic Flow</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-primary rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Normal Traffic</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                            <span class="text-xs text-text-secondary">Anomalies</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-warning rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Attack Signatures</span>
+                        </div>
+                        <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                            Full Screen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Multi-layered Traffic Chart -->
+                <div class="relative h-96 bg-background rounded-lg border border-cyber overflow-hidden">
+                    <canvas id="trafficFlowChart" class="w-full h-full"></canvas>
+                    <!-- Chart Overlay -->
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-10"></div>
+                    
+                    <!-- Real-time Metrics Overlay -->
+                    <div class="absolute top-4 left-4 space-y-2">
+                        <div class="text-xs text-text-muted">Current: 2.4 Gbps</div>
+                        <div class="text-xs text-text-muted">Peak: 3.1 Gbps (14:23)</div>
+                        <div class="text-xs text-text-muted">Avg: 1.8 Gbps</div>
+                    </div>
+                    
+                    <!-- Anomaly Indicators -->
+                    <div class="absolute top-1/4 left-1/3 w-4 h-4 bg-error rounded-full animate-pulse cursor-pointer" title="Traffic Spike Detected - 14:28"></div>
+                    <div class="absolute top-2/3 right-1/4 w-3 h-3 bg-warning rounded-full cursor-pointer" title="Unusual Protocol Pattern - 14:22"></div>
+                    <div class="absolute bottom-1/3 left-2/3 w-2 h-2 bg-error rounded-full animate-pulse cursor-pointer" title="DDoS Pattern - 14:15"></div>
+                    
+                    <!-- Interactive Controls -->
+                    <div class="absolute bottom-4 right-4 flex space-x-2">
+                        <button class="bg-primary/20 text-primary px-3 py-1 rounded text-xs hover:bg-primary/30 transition-colors">
+                            Zoom In
+                        </button>
+                        <button class="bg-error/20 text-error px-3 py-1 rounded text-xs hover:bg-error/30 transition-colors">
+                            Block Source
+                        </button>
+                        <button class="bg-warning/20 text-warning px-3 py-1 rounded text-xs hover:bg-warning/30 transition-colors">
+                            Capture
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Traffic Pattern Analysis -->
+                <div class="mt-6">
+                    <h3 class="text-sm font-medium text-text-secondary mb-3">Protocol Breakdown</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">HTTP/HTTPS</span>
+                                <span class="text-xs text-primary">68%</span>
+                            </div>
+                            <div class="w-full bg-surface-hover rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 68%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">DNS</span>
+                                <span class="text-xs text-success">18%</span>
+                            </div>
+                            <div class="w-full bg-surface-hover rounded-full h-2">
+                                <div class="bg-success h-2 rounded-full" style="width: 18%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">FTP/SFTP</span>
+                                <span class="text-xs text-warning">9%</span>
+                            </div>
+                            <div class="w-full bg-surface-hover rounded-full h-2">
+                                <div class="bg-warning h-2 rounded-full" style="width: 9%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-text-secondary">Other</span>
+                                <span class="text-xs text-text-muted">5%</span>
+                            </div>
+                            <div class="w-full bg-surface-hover rounded-full h-2">
+                                <div class="bg-text-muted h-2 rounded-full" style="width: 5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Talkers Panel (4 cols equivalent) -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Top Talkers</h2>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                        <span class="text-xs text-text-secondary">Live</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Top Talker 1 -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                                <span class="text-sm font-mono text-text-primary">192.168.1.45</span>
+                            </div>
+                            <span class="text-xs text-error font-medium">SUSPICIOUS</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Bandwidth:</span>
+                                <span class="text-text-primary">847 Mbps</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Protocol:</span>
+                                <span class="text-text-primary">HTTP/HTTPS</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Location:</span>
+                                <span class="text-text-primary">China</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex space-x-2">
+                            <button class="bg-error text-white px-2 py-1 rounded text-xs font-medium hover:bg-error-600 transition-colors">
+                                Block
+                            </button>
+                            <button class="bg-primary text-background px-2 py-1 rounded text-xs font-medium hover:bg-primary-600 transition-colors">
+                                Investigate
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Top Talker 2 -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-sm font-mono text-text-primary">10.0.0.23</span>
+                            </div>
+                            <span class="text-xs text-warning font-medium">INTERNAL</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Bandwidth:</span>
+                                <span class="text-text-primary">623 Mbps</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Protocol:</span>
+                                <span class="text-text-primary">FTP/SFTP</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Location:</span>
+                                <span class="text-text-primary">Internal</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex space-x-2">
+                            <button class="bg-primary text-background px-2 py-1 rounded text-xs font-medium hover:bg-primary-600 transition-colors">
+                                Monitor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Top Talker 3 -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-success rounded-full"></div>
+                                <span class="text-sm font-mono text-text-primary">203.0.113.67</span>
+                            </div>
+                            <span class="text-xs text-success font-medium">TRUSTED</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Bandwidth:</span>
+                                <span class="text-text-primary">445 Mbps</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Protocol:</span>
+                                <span class="text-text-primary">HTTPS</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Location:</span>
+                                <span class="text-text-primary">USA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Talker 4 -->
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <span class="text-sm font-mono text-text-primary">198.51.100.89</span>
+                            </div>
+                            <span class="text-xs text-primary font-medium">NORMAL</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Bandwidth:</span>
+                                <span class="text-text-primary">312 Mbps</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Protocol:</span>
+                                <span class="text-text-primary">DNS</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-text-secondary">Location:</span>
+                                <span class="text-text-primary">Germany</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Summary -->
+                <div class="mt-6 pt-4 border-t border-cyber">
+                    <h3 class="text-sm font-medium text-text-secondary mb-3">Geographic Distribution</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-text-secondary">USA</span>
+                            <span class="text-xs text-success">34%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-text-secondary">China</span>
+                            <span class="text-xs text-error">28%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-text-secondary">Germany</span>
+                            <span class="text-xs text-primary">18%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-text-secondary">Others</span>
+                            <span class="text-xs text-text-muted">20%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Traffic Pattern Heat Map -->
+        <section class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-text-primary">Traffic Pattern Heat Map</h2>
+                <div class="flex items-center space-x-4">
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>Last 24 Hours</option>
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                    </select>
+                    <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                        Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Heat Map Visualization -->
+            <div class="relative h-64 bg-background rounded-lg border border-cyber overflow-hidden">
+                <div class="absolute inset-0 bg-cyber-pattern opacity-5"></div>
+                
+                <!-- Time Labels -->
+                <div class="absolute top-4 left-4 right-4 flex justify-between text-xs text-text-muted">
+                    <span>00:00</span>
+                    <span>06:00</span>
+                    <span>12:00</span>
+                    <span>18:00</span>
+                    <span>24:00</span>
+                </div>
+                
+                <!-- Heat Map Grid -->
+                <div class="absolute inset-0 p-8">
+                    <div class="grid grid-cols-24 gap-1 h-full">
+                        <!-- Simulated heat map cells with varying intensities -->
+                        <div class="bg-primary/10 rounded-sm"></div>
+                        <div class="bg-primary/20 rounded-sm"></div>
+                        <div class="bg-primary/15 rounded-sm"></div>
+                        <div class="bg-primary/30 rounded-sm"></div>
+                        <div class="bg-primary/25 rounded-sm"></div>
+                        <div class="bg-primary/40 rounded-sm"></div>
+                        <div class="bg-primary/35 rounded-sm"></div>
+                        <div class="bg-primary/50 rounded-sm"></div>
+                        <div class="bg-primary/60 rounded-sm"></div>
+                        <div class="bg-error/70 rounded-sm animate-pulse"></div>
+                        <div class="bg-primary/55 rounded-sm"></div>
+                        <div class="bg-primary/45 rounded-sm"></div>
+                        <div class="bg-primary/65 rounded-sm"></div>
+                        <div class="bg-primary/70 rounded-sm"></div>
+                        <div class="bg-warning/60 rounded-sm"></div>
+                        <div class="bg-primary/50 rounded-sm"></div>
+                        <div class="bg-primary/40 rounded-sm"></div>
+                        <div class="bg-primary/30 rounded-sm"></div>
+                        <div class="bg-primary/25 rounded-sm"></div>
+                        <div class="bg-primary/20 rounded-sm"></div>
+                        <div class="bg-primary/15 rounded-sm"></div>
+                        <div class="bg-primary/10 rounded-sm"></div>
+                        <div class="bg-primary/5 rounded-sm"></div>
+                        <div class="bg-primary/10 rounded-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- Intensity Legend -->
+                <div class="absolute bottom-4 right-4 flex items-center space-x-2">
+                    <span class="text-xs text-text-muted">Low</span>
+                    <div class="flex space-x-1">
+                        <div class="w-3 h-3 bg-primary/20 rounded-sm"></div>
+                        <div class="w-3 h-3 bg-primary/40 rounded-sm"></div>
+                        <div class="w-3 h-3 bg-primary/60 rounded-sm"></div>
+                        <div class="w-3 h-3 bg-primary/80 rounded-sm"></div>
+                        <div class="w-3 h-3 bg-error/80 rounded-sm"></div>
+                    </div>
+                    <span class="text-xs text-text-muted">High</span>
+                </div>
+            </div>
+
+            <!-- Pattern Analysis Summary -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Peak Hours</h4>
+                    <div class="text-xs text-text-secondary space-y-1">
+                        <div>Morning: 09:00 - 11:00</div>
+                        <div>Afternoon: 14:00 - 16:00</div>
+                        <div>Evening: 19:00 - 21:00</div>
+                    </div>
+                </div>
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Anomaly Windows</h4>
+                    <div class="text-xs text-text-secondary space-y-1">
+                        <div class="text-error">10:30 - Spike Detected</div>
+                        <div class="text-warning">15:45 - Pattern Change</div>
+                        <div class="text-error">22:15 - DDoS Activity</div>
+                    </div>
+                </div>
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Baseline Comparison</h4>
+                    <div class="text-xs text-text-secondary space-y-1">
+                        <div class="text-success">+15% vs Yesterday</div>
+                        <div class="text-primary">+8% vs Last Week</div>
+                        <div class="text-warning">+23% vs Last Month</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Chat Assistant -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="bg-primary text-background w-14 h-14 rounded-full shadow-cyber-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04 1.05 4.35L2 22l5.65-1.05C9.96 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zm0 18c-1.1 0-2.18-.25-3.15-.72L4 20l.72-4.85C4.25 14.18 4 13.1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="12" cy="12" r="1"/>
+            </svg>
+        </button>
+        <div class="absolute bottom-16 right-0 bg-surface border border-cyber rounded-lg p-2 shadow-cyber-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span class="text-xs text-text-secondary">Need Help?</span>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-cyber px-4 py-2">
+        <div class="flex items-center justify-around">
+            <a href="security_operations_center.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2z"/>
+                </svg>
+                <span class="text-xs">SOC</span>
+            </a>
+            <a href="threat_intelligence_hub.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs">Intel</span>
+            </a>
+            <a href="network_traffic_monitor.html" class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+                <span class="text-xs">Network</span>
+            </a>
+            <a href="executive_security_view.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                <span class="text-xs">Executive</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // Simulate real-time traffic updates
+        function updateTrafficMetrics() {
+            // Simulate bandwidth utilization changes
+            const utilizationGauge = document.querySelector('.text-primary');
+            if (utilizationGauge && utilizationGauge.textContent.includes('%')) {
+                const current = parseInt(utilizationGauge.textContent);
+                const change = Math.floor(Math.random() * 10) - 5;
+                const newValue = Math.max(0, Math.min(100, current + change));
+                utilizationGauge.textContent = newValue + '%';
+            }
+        }
+
+        // Update traffic metrics every 3 seconds
+        setInterval(updateTrafficMetrics, 3000);
+
+        // Simulate WebSocket connection for real-time data
+        function simulateWebSocketUpdates() {
+            // Simulate new anomaly detection
+            const anomalyCount = document.querySelector('.text-error');
+            if (anomalyCount && !isNaN(parseInt(anomalyCount.textContent))) {
+                const current = parseInt(anomalyCount.textContent);
+                if (Math.random() < 0.1) { // 10% chance of new anomaly
+                    anomalyCount.textContent = current + 1;
+                }
+            }
+        }
+
+        // Simulate WebSocket updates every 5 seconds
+        setInterval(simulateWebSocketUpdates, 5000);
+
+        // Interactive chart zoom functionality
+        function initializeChartInteractions() {
+            const zoomButton = document.querySelector('button:contains("Zoom In")');
+            const blockButton = document.querySelector('button:contains("Block Source")');
+            const captureButton = document.querySelector('button:contains("Capture")');
+            
+            // Add click handlers for interactive features
+            document.addEventListener('click', function(e) {
+                if (e.target.textContent === 'Zoom In') {
+                    console.log('Zooming into suspicious traffic spike...');
+                }
+                if (e.target.textContent === 'Block Source') {
+                    console.log('Blocking malicious source IP...');
+                }
+                if (e.target.textContent === 'Capture') {
+                    console.log('Initiating packet capture...');
+                }
+            });
+        }
+
+        // Initialize interactions when page loads
+        document.addEventListener('DOMContentLoaded', initializeChartInteractions);
+
+        // Simulate live data refresh indicator
+        function updateLiveIndicators() {
+            const liveIndicators = document.querySelectorAll('.animate-pulse');
+            liveIndicators.forEach(indicator => {
+                indicator.classList.toggle('bg-success');
+                indicator.classList.toggle('bg-primary');
+            });
+        }
+
+        // Update live indicators every 2 seconds
+        setInterval(updateLiveIndicators, 2000);
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

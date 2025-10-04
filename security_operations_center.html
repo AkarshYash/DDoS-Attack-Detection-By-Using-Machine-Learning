@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security Operations Center - Shield-AI Dashboard</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fshieldai6924back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background text-text-primary font-inter">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-surface border-b border-cyber px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo and Brand -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-primary" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2zm0 4.13L25 9.87v7.13c0 6.43-4.24 12.13-9 13.93C11.24 29.13 7 23.43 7 17V9.87L16 6.13z"/>
+                        <circle cx="16" cy="16" r="6" fill="currentColor"/>
+                    </svg>
+                    <span class="text-xl font-bold text-primary">Shield-AI</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <a href="security_operations_center.html" class="text-primary font-medium border-b-2 border-primary pb-1">SOC Dashboard</a>
+                    <a href="threat_intelligence_hub.html" class="text-text-secondary hover:text-primary transition-colors">Threat Intel</a>
+                    <a href="network_traffic_monitor.html" class="text-text-secondary hover:text-primary transition-colors">Network Monitor</a>
+                    <a href="executive_security_view.html" class="text-text-secondary hover:text-primary transition-colors">Executive View</a>
+                </div>
+            </div>
+            
+            <!-- Global Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Time Range Selector -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>Last 15min</option>
+                    <option>Last 1hr</option>
+                    <option>Last 6hrs</option>
+                    <option>Last 24hrs</option>
+                </select>
+                
+                <!-- Organization Filter -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>All Organizations</option>
+                    <option>TechCorp Inc.</option>
+                    <option>SecureBank Ltd.</option>
+                    <option>DataFlow Systems</option>
+                </select>
+                
+                <!-- Auto-refresh Toggle -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-success rounded-full animate-pulse mr-2"></div>
+                        <span class="text-xs text-text-secondary">Live</span>
+                    </div>
+                    <button class="bg-primary text-background px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+                        Auto-Refresh ON
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center space-x-2">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="User Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                    <span class="text-sm text-text-secondary hidden md:block">Alex Chen</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <main class="p-6 space-y-6">
+        <!-- Primary KPI Row -->
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Active Threats Card -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Active Threats</h3>
+                    <div class="w-3 h-3 bg-error rounded-full animate-pulse"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-error">247</span>
+                    <span class="text-error text-sm mb-1">+12 (5min)</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Critical: 23 • High: 89 • Medium: 135
+                </div>
+            </div>
+
+            <!-- Blocked IPs Card -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Blocked IPs</h3>
+                    <div class="w-3 h-3 bg-warning rounded-full animate-pulse"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-warning">1,847</span>
+                    <span class="text-success text-sm mb-1">+156 (5min)</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Auto-blocked: 1,623 • Manual: 224
+                </div>
+            </div>
+
+            <!-- Network Health Score -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Network Health</h3>
+                    <div class="w-3 h-3 bg-success rounded-full"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-success">94.7%</span>
+                    <span class="text-success text-sm mb-1">+0.3%</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Uptime: 99.98% • Latency: 12ms
+                </div>
+            </div>
+
+            <!-- Mitigation Effectiveness -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Mitigation Rate</h3>
+                    <div class="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-primary">98.2%</span>
+                    <span class="text-success text-sm mb-1">+1.1%</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Avg Response: 2.3s • Success: 2,341
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Visualization Area -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Network Traffic Flow Chart (16 cols equivalent) -->
+            <div class="xl:col-span-2 bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Real-Time Network Traffic</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-success rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Normal Traffic</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                            <span class="text-xs text-text-secondary">Threat Activity</span>
+                        </div>
+                        <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                            Full Screen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Traffic Chart Placeholder -->
+                <div class="relative h-80 bg-background rounded-lg border border-cyber overflow-hidden">
+                    <canvas id="trafficChart" class="w-full h-full"></canvas>
+                    <!-- Simulated Chart Overlay -->
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-20"></div>
+                    <div class="absolute top-4 left-4 space-y-2">
+                        <div class="text-xs text-text-muted">Current: 2.4 Gbps</div>
+                        <div class="text-xs text-text-muted">Peak: 3.1 Gbps (14:23)</div>
+                    </div>
+                    
+                    <!-- Threat Indicators -->
+                    <div class="absolute top-1/3 left-1/4 w-3 h-3 bg-error rounded-full animate-pulse"></div>
+                    <div class="absolute top-2/3 right-1/3 w-2 h-2 bg-warning rounded-full animate-pulse"></div>
+                    <div class="absolute bottom-1/4 left-2/3 w-4 h-4 bg-error rounded-full animate-pulse opacity-75"></div>
+                </div>
+
+                <!-- Geographic Attack Mapping -->
+                <div class="mt-6">
+                    <h3 class="text-sm font-medium text-text-secondary mb-3">Attack Source Locations</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-error rounded-full"></div>
+                                <span class="text-xs text-text-secondary">China</span>
+                            </div>
+                            <div class="text-sm font-medium text-error mt-1">89 attacks</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-xs text-text-secondary">Russia</span>
+                            </div>
+                            <div class="text-sm font-medium text-warning mt-1">67 attacks</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-xs text-text-secondary">Brazil</span>
+                            </div>
+                            <div class="text-sm font-medium text-warning mt-1">34 attacks</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <span class="text-xs text-text-secondary">Others</span>
+                            </div>
+                            <div class="text-sm font-medium text-primary mt-1">57 attacks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Alert Feed (8 cols equivalent) -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Live Alerts</h2>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                        <span class="text-xs text-text-secondary">Real-time</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Critical Alert -->
+                    <div class="bg-error/10 border border-error/30 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                                <span class="text-xs font-medium text-error">CRITICAL</span>
+                            </div>
+                            <span class="text-xs text-text-muted">2 min ago</span>
+                        </div>
+                        <h4 class="text-sm font-medium text-text-primary mb-1">DDoS Attack Detected</h4>
+                        <p class="text-xs text-text-secondary mb-3">High-volume traffic from 192.168.1.0/24 targeting web servers</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-error text-white px-3 py-1 rounded text-xs font-medium hover:bg-error-600 transition-colors">
+                                Investigate
+                            </button>
+                            <button class="bg-surface-hover text-text-secondary px-3 py-1 rounded text-xs hover:text-text-primary transition-colors">
+                                Block Source
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- High Alert -->
+                    <div class="bg-warning/10 border border-warning/30 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-xs font-medium text-warning">HIGH</span>
+                            </div>
+                            <span class="text-xs text-text-muted">5 min ago</span>
+                        </div>
+                        <h4 class="text-sm font-medium text-text-primary mb-1">Suspicious Login Pattern</h4>
+                        <p class="text-xs text-text-secondary mb-3">Multiple failed attempts from IP 203.0.113.45</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-warning text-background px-3 py-1 rounded text-xs font-medium hover:bg-warning-600 transition-colors">
+                                Review
+                            </button>
+                            <button class="bg-surface-hover text-text-secondary px-3 py-1 rounded text-xs hover:text-text-primary transition-colors">
+                                Block IP
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Medium Alert -->
+                    <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-primary rounded-full"></div>
+                                <span class="text-xs font-medium text-primary">MEDIUM</span>
+                            </div>
+                            <span class="text-xs text-text-muted">8 min ago</span>
+                        </div>
+                        <h4 class="text-sm font-medium text-text-primary mb-1">Port Scan Detected</h4>
+                        <p class="text-xs text-text-secondary mb-3">Systematic port scanning from 198.51.100.23</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-primary text-background px-3 py-1 rounded text-xs font-medium hover:bg-primary-600 transition-colors">
+                                Analyze
+                            </button>
+                            <button class="bg-surface-hover text-text-secondary px-3 py-1 rounded text-xs hover:text-text-primary transition-colors">
+                                Monitor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info Alert -->
+                    <div class="bg-success/10 border border-success/30 rounded-lg p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-success rounded-full"></div>
+                                <span class="text-xs font-medium text-success">INFO</span>
+                            </div>
+                            <span class="text-xs text-text-muted">12 min ago</span>
+                        </div>
+                        <h4 class="text-sm font-medium text-text-primary mb-1">Mitigation Successful</h4>
+                        <p class="text-xs text-text-secondary mb-3">DDoS attack from 10.0.0.0/8 successfully blocked</p>
+                        <div class="flex space-x-2">
+                            <button class="bg-success text-background px-3 py-1 rounded text-xs font-medium hover:bg-success-600 transition-colors">
+                                Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Summary -->
+                <div class="mt-6 pt-4 border-t border-cyber">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="text-lg font-bold text-error">23</div>
+                            <div class="text-xs text-text-muted">Critical</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-warning">89</div>
+                            <div class="text-xs text-text-muted">High</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Threat Timeline Visualization -->
+        <section class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-text-primary">Threat Timeline</h2>
+                <div class="flex items-center space-x-4">
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>All Threats</option>
+                        <option>DDoS Attacks</option>
+                        <option>Malware</option>
+                        <option>Intrusion Attempts</option>
+                    </select>
+                    <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                        Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline Chart -->
+            <div class="relative h-48 bg-background rounded-lg border border-cyber overflow-hidden">
+                <div class="absolute inset-0 bg-cyber-pattern opacity-10"></div>
+                
+                <!-- Timeline Events -->
+                <div class="absolute inset-0 p-4">
+                    <div class="flex items-center justify-between h-full">
+                        <!-- Time markers -->
+                        <div class="flex flex-col justify-between h-full text-xs text-text-muted">
+                            <span>14:30</span>
+                            <span>14:25</span>
+                            <span>14:20</span>
+                            <span>14:15</span>
+                            <span>14:10</span>
+                        </div>
+                        
+                        <!-- Event visualization -->
+                        <div class="flex-1 relative mx-4">
+                            <!-- Critical event -->
+                            <div class="absolute top-2 left-1/4 w-4 h-4 bg-error rounded-full animate-pulse cursor-pointer" title="DDoS Attack - 14:28"></div>
+                            <!-- High event -->
+                            <div class="absolute top-1/3 left-1/2 w-3 h-3 bg-warning rounded-full cursor-pointer" title="Port Scan - 14:22"></div>
+                            <!-- Medium event -->
+                            <div class="absolute top-2/3 left-3/4 w-2 h-2 bg-primary rounded-full cursor-pointer" title="Failed Login - 14:15"></div>
+                            <!-- Success event -->
+                            <div class="absolute bottom-2 left-1/3 w-3 h-3 bg-success rounded-full cursor-pointer" title="Threat Blocked - 14:12"></div>
+                        </div>
+                        
+                        <!-- Severity scale -->
+                        <div class="flex flex-col justify-between h-full text-xs text-text-muted">
+                            <span>Critical</span>
+                            <span>High</span>
+                            <span>Medium</span>
+                            <span>Low</span>
+                            <span>Info</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Legend -->
+            <div class="mt-4 flex items-center justify-center space-x-6">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-error rounded-full"></div>
+                    <span class="text-xs text-text-secondary">Critical Threats</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-warning rounded-full"></div>
+                    <span class="text-xs text-text-secondary">High Priority</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-primary rounded-full"></div>
+                    <span class="text-xs text-text-secondary">Medium Risk</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-success rounded-full"></div>
+                    <span class="text-xs text-text-secondary">Resolved</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Chat Assistant -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="bg-primary text-background w-14 h-14 rounded-full shadow-cyber-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04 1.05 4.35L2 22l5.65-1.05C9.96 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zm0 18c-1.1 0-2.18-.25-3.15-.72L4 20l.72-4.85C4.25 14.18 4 13.1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="12" cy="12" r="1"/>
+            </svg>
+        </button>
+        <div class="absolute bottom-16 right-0 bg-surface border border-cyber rounded-lg p-2 shadow-cyber-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span class="text-xs text-text-secondary">Need Help?</span>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-cyber px-4 py-2">
+        <div class="flex items-center justify-around">
+            <a href="security_operations_center.html" class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2z"/>
+                </svg>
+                <span class="text-xs">SOC</span>
+            </a>
+            <a href="threat_intelligence_hub.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs">Intel</span>
+            </a>
+            <a href="network_traffic_monitor.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+                <span class="text-xs">Network</span>
+            </a>
+            <a href="executive_security_view.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                <span class="text-xs">Executive</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // Simulate real-time updates
+        function updateMetrics() {
+            // Simulate threat count updates
+            const threatCount = document.querySelector('.text-error');
+            if (threatCount) {
+                const current = parseInt(threatCount.textContent);
+                const change = Math.floor(Math.random() * 5) - 2;
+                threatCount.textContent = Math.max(0, current + change);
+            }
+        }
+
+        // Update metrics every 5 seconds
+        setInterval(updateMetrics, 5000);
+
+        // Simulate WebSocket connection status
+        function updateConnectionStatus() {
+            const statusDot = document.querySelector('.animate-pulse');
+            if (statusDot) {
+                statusDot.classList.toggle('bg-success');
+                statusDot.classList.toggle('bg-warning');
+            }
+        }
+
+        // Simulate connection status changes
+        setInterval(updateConnectionStatus, 30000);
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

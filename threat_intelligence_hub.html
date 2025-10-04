@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threat Intelligence Hub - Shield-AI Dashboard</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fshieldai6924back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background text-text-primary font-inter">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-surface border-b border-cyber px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo and Brand -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-primary" viewBox="0 0 32 32" fill="currentColor">
+                        <path d="M16 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2zm0 4.13L25 9.87v7.13c0 6.43-4.24 12.13-9 13.93C11.24 29.13 7 23.43 7 17V9.87L16 6.13z"/>
+                        <circle cx="16" cy="16" r="6" fill="currentColor"/>
+                    </svg>
+                    <span class="text-xl font-bold text-primary">Shield-AI</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6 ml-8">
+                    <a href="security_operations_center.html" class="text-text-secondary hover:text-primary transition-colors">SOC Dashboard</a>
+                    <a href="threat_intelligence_hub.html" class="text-primary font-medium border-b-2 border-primary pb-1">Threat Intel</a>
+                    <a href="network_traffic_monitor.html" class="text-text-secondary hover:text-primary transition-colors">Network Monitor</a>
+                    <a href="executive_security_view.html" class="text-text-secondary hover:text-primary transition-colors">Executive View</a>
+                </div>
+            </div>
+            
+            <!-- Global Controls -->
+            <div class="flex items-center space-x-4">
+                <!-- Time Range Selector -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>Last 15min</option>
+                    <option>Last 1hr</option>
+                    <option>Last 6hrs</option>
+                    <option>Last 24hrs</option>
+                </select>
+                
+                <!-- Organization Filter -->
+                <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                    <option>All Organizations</option>
+                    <option>TechCorp Inc.</option>
+                    <option>SecureBank Ltd.</option>
+                    <option>DataFlow Systems</option>
+                </select>
+                
+                <!-- Auto-refresh Toggle -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-success rounded-full animate-pulse mr-2"></div>
+                        <span class="text-xs text-text-secondary">Live</span>
+                    </div>
+                    <button class="bg-primary text-background px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+                        Auto-Refresh ON
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center space-x-2">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="User Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                    <span class="text-sm text-text-secondary hidden md:block">Alex Chen</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Advanced Filtering Controls -->
+    <section class="bg-surface border-b border-cyber px-6 py-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <!-- Filter Controls Left -->
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- Threat Severity Selector -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-text-secondary">Severity:</label>
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>All Levels</option>
+                        <option>Critical</option>
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+
+                <!-- Attack Vector Classification -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-text-secondary">Vector:</label>
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>All Vectors</option>
+                        <option>DDoS</option>
+                        <option>Malware</option>
+                        <option>Phishing</option>
+                        <option>Brute Force</option>
+                        <option>SQL Injection</option>
+                    </select>
+                </div>
+
+                <!-- Geographic Region Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-text-secondary">Region:</label>
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>Global</option>
+                        <option>North America</option>
+                        <option>Europe</option>
+                        <option>Asia Pacific</option>
+                        <option>Latin America</option>
+                        <option>Africa</option>
+                    </select>
+                </div>
+
+                <!-- ML Model Confidence Threshold -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-text-secondary">Confidence:</label>
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>All Levels</option>
+                        <option>>95%</option>
+                        <option>>90%</option>
+                        <option>>85%</option>
+                        <option>>80%</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Preset Combinations & Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Preset Investigation Scenarios -->
+                <div class="flex items-center space-x-2">
+                    <button class="bg-primary/20 text-primary px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary/30 transition-colors">
+                        APT Analysis
+                    </button>
+                    <button class="bg-surface-hover text-text-secondary px-3 py-2 rounded-lg text-sm hover:text-text-primary transition-colors">
+                        DDoS Focus
+                    </button>
+                    <button class="bg-surface-hover text-text-secondary px-3 py-2 rounded-lg text-sm hover:text-text-primary transition-colors">
+                        Malware Hunt
+                    </button>
+                </div>
+
+                <!-- Export & Refresh -->
+                <div class="flex items-center space-x-2">
+                    <button class="bg-warning text-background px-3 py-2 rounded-lg text-sm font-medium hover:bg-warning-600 transition-colors">
+                        Export IOCs
+                    </button>
+                    <button class="bg-surface-hover text-text-secondary p-2 rounded-lg hover:text-text-primary transition-colors">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <main class="p-6 space-y-6">
+        <!-- Primary Metrics Strip -->
+        <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Threat Scoring Distribution -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Threat Score Distribution</h3>
+                    <div class="w-3 h-3 bg-error rounded-full animate-pulse"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-error">8.7</span>
+                    <span class="text-text-secondary text-sm mb-1">/10 avg</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    High Risk: 34% • Medium: 45% • Low: 21%
+                </div>
+                <!-- Sparkline Indicator -->
+                <div class="mt-3 h-8 bg-background rounded-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-20"></div>
+                    <div class="absolute bottom-0 left-0 w-1/3 h-3/4 bg-error/30 rounded-t"></div>
+                    <div class="absolute bottom-0 left-1/3 w-1/3 h-1/2 bg-warning/30 rounded-t"></div>
+                    <div class="absolute bottom-0 right-0 w-1/3 h-1/4 bg-success/30 rounded-t"></div>
+                </div>
+            </div>
+
+            <!-- Model Accuracy Trending -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">ML Model Accuracy</h3>
+                    <div class="w-3 h-3 bg-success rounded-full"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-success">96.8%</span>
+                    <span class="text-success text-sm mb-1">+0.4%</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Precision: 97.2% • Recall: 94.1%
+                </div>
+                <!-- Trending Line -->
+                <div class="mt-3 h-8 bg-background rounded-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-20"></div>
+                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 32">
+                        <polyline points="0,20 20,18 40,15 60,12 80,10 100,8" stroke="currentColor" stroke-width="2" fill="none" class="text-success"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- False Positive Rate -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">False Positive Rate</h3>
+                    <div class="w-3 h-3 bg-primary rounded-full"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-primary">2.3%</span>
+                    <span class="text-success text-sm mb-1">-0.1%</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    Target: <2.5% • Trend: Improving
+                </div>
+                <!-- Progress Bar -->
+                <div class="mt-3 h-2 bg-background rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" style="width: 23%"></div>
+                </div>
+            </div>
+
+            <!-- Detection Latency -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-text-secondary text-sm font-medium">Detection Latency</h3>
+                    <div class="w-3 h-3 bg-warning rounded-full animate-pulse"></div>
+                </div>
+                <div class="flex items-end space-x-2">
+                    <span class="text-3xl font-bold text-warning">1.4s</span>
+                    <span class="text-error text-sm mb-1">+0.2s</span>
+                </div>
+                <div class="mt-2 text-xs text-text-muted">
+                    P95: 2.1s • P99: 3.8s
+                </div>
+                <!-- Latency Visualization -->
+                <div class="mt-3 h-8 bg-background rounded-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-cyber-pattern opacity-20"></div>
+                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-warning/20 rounded-t"></div>
+                    <div class="absolute top-1/2 left-1/4 w-2 h-2 bg-warning rounded-full animate-pulse"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Analysis Area -->
+        <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Interactive Correlation Matrix (8 cols equivalent) -->
+            <div class="xl:col-span-2 bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">Attack Pattern Correlation Matrix</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-error rounded-full"></div>
+                            <span class="text-xs text-text-secondary">High Correlation</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-warning rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Medium</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-primary rounded-full"></div>
+                            <span class="text-xs text-text-secondary">Low</span>
+                        </div>
+                        <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                            Full Screen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Correlation Matrix Grid -->
+                <div class="relative h-80 bg-background rounded-lg border border-cyber overflow-hidden p-4">
+                    <div class="grid grid-cols-6 gap-2 h-full">
+                        <!-- Matrix Headers -->
+                        <div class="text-xs text-text-muted flex items-end pb-2">DDoS</div>
+                        <div class="text-xs text-text-muted flex items-end pb-2">Malware</div>
+                        <div class="text-xs text-text-muted flex items-end pb-2">Phishing</div>
+                        <div class="text-xs text-text-muted flex items-end pb-2">Brute Force</div>
+                        <div class="text-xs text-text-muted flex items-end pb-2">SQL Inj</div>
+                        <div class="text-xs text-text-muted flex items-end pb-2">XSS</div>
+
+                        <!-- Matrix Cells with Hover Tooltips -->
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors group relative" title="DDoS-DDoS: 1.0 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">1.0</div>
+                        </div>
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="DDoS-Malware: 0.73 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.73</div>
+                        </div>
+                        <div class="bg-primary/40 rounded cursor-pointer hover:bg-primary transition-colors group relative" title="DDoS-Phishing: 0.42 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.42</div>
+                        </div>
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="DDoS-Brute Force: 0.68 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.68</div>
+                        </div>
+                        <div class="bg-primary/30 rounded cursor-pointer hover:bg-primary transition-colors group relative" title="DDoS-SQL Injection: 0.31 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.31</div>
+                        </div>
+                        <div class="bg-primary/20 rounded cursor-pointer hover:bg-primary transition-colors group relative" title="DDoS-XSS: 0.18 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.18</div>
+                        </div>
+
+                        <!-- Second Row -->
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="Malware-DDoS: 0.73 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.73</div>
+                        </div>
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors group relative" title="Malware-Malware: 1.0 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">1.0</div>
+                        </div>
+                        <div class="bg-warning/80 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="Malware-Phishing: 0.84 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.84</div>
+                        </div>
+                        <div class="bg-primary/50 rounded cursor-pointer hover:bg-primary transition-colors group relative" title="Malware-Brute Force: 0.51 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.51</div>
+                        </div>
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="Malware-SQL Injection: 0.67 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.67</div>
+                        </div>
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors group relative" title="Malware-XSS: 0.72 correlation">
+                            <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-white opacity-0 group-hover:opacity-100">0.72</div>
+                        </div>
+
+                        <!-- Remaining rows with similar pattern -->
+                        <div class="bg-primary/40 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-warning/80 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors"></div>
+                        <div class="bg-primary/30 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-warning/90 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-primary/50 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-primary/30 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors"></div>
+                        <div class="bg-primary/40 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-primary/20 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+
+                        <div class="bg-primary/30 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-warning/90 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-primary/40 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors"></div>
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+
+                        <div class="bg-primary/20 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-warning/60 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-primary/20 rounded cursor-pointer hover:bg-primary transition-colors"></div>
+                        <div class="bg-warning/70 rounded cursor-pointer hover:bg-warning transition-colors"></div>
+                        <div class="bg-error/80 rounded cursor-pointer hover:bg-error transition-colors"></div>
+                    </div>
+                </div>
+
+                <!-- IOC Information Panel -->
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <h4 class="text-sm font-medium text-text-primary mb-2">Active IOCs</h4>
+                        <div class="text-2xl font-bold text-primary">2,847</div>
+                        <div class="text-xs text-text-muted mt-1">+156 new (24h)</div>
+                    </div>
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <h4 class="text-sm font-medium text-text-primary mb-2">Confidence Score</h4>
+                        <div class="text-2xl font-bold text-success">94.2%</div>
+                        <div class="text-xs text-text-muted mt-1">Avg across all IOCs</div>
+                    </div>
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <h4 class="text-sm font-medium text-text-primary mb-2">Pattern Matches</h4>
+                        <div class="text-2xl font-bold text-warning">1,234</div>
+                        <div class="text-xs text-text-muted mt-1">Last 6 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explainable AI Insights Panel (4 cols equivalent) -->
+            <div class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-text-primary">AI Insights</h2>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                        <span class="text-xs text-text-secondary">ML Active</span>
+                    </div>
+                </div>
+
+                <!-- Feature Importance Rankings -->
+                <div class="space-y-4 mb-6">
+                    <h3 class="text-sm font-medium text-text-secondary">Feature Importance</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-primary">Packet Size Variance</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-background rounded-full overflow-hidden">
+                                    <div class="h-full bg-error rounded-full" style="width: 92%"></div>
+                                </div>
+                                <span class="text-xs text-text-muted font-mono">0.92</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-primary">Request Frequency</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-background rounded-full overflow-hidden">
+                                    <div class="h-full bg-warning rounded-full" style="width: 87%"></div>
+                                </div>
+                                <span class="text-xs text-text-muted font-mono">0.87</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-primary">Geographic Anomaly</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-background rounded-full overflow-hidden">
+                                    <div class="h-full bg-warning rounded-full" style="width: 74%"></div>
+                                </div>
+                                <span class="text-xs text-text-muted font-mono">0.74</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-primary">Protocol Deviation</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-background rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full" style="width: 68%"></div>
+                                </div>
+                                <span class="text-xs text-text-muted font-mono">0.68</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-text-primary">Time Pattern</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-background rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full" style="width: 56%"></div>
+                                </div>
+                                <span class="text-xs text-text-muted font-mono">0.56</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Decision Tree Visualization -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-medium text-text-secondary mb-3">Decision Path</h3>
+                    <div class="bg-background rounded-lg p-4 border border-cyber">
+                        <div class="space-y-3">
+                            <!-- Root Node -->
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-primary rounded-full"></div>
+                                <span class="text-xs text-text-primary">Packet Size > 1500 bytes?</span>
+                                <span class="text-xs text-success font-mono">YES</span>
+                            </div>
+                            
+                            <!-- Level 1 -->
+                            <div class="flex items-center space-x-2 ml-4">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-xs text-text-primary">Frequency > 100/sec?</span>
+                                <span class="text-xs text-success font-mono">YES</span>
+                            </div>
+                            
+                            <!-- Level 2 -->
+                            <div class="flex items-center space-x-2 ml-8">
+                                <div class="w-2 h-2 bg-error rounded-full"></div>
+                                <span class="text-xs text-text-primary">Geographic Risk?</span>
+                                <span class="text-xs text-success font-mono">YES</span>
+                            </div>
+                            
+                            <!-- Final Decision -->
+                            <div class="flex items-center space-x-2 ml-12 p-2 bg-error/20 rounded border border-error/30">
+                                <div class="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                                <span class="text-xs text-error font-medium">THREAT DETECTED</span>
+                                <span class="text-xs text-error font-mono">Confidence: 96.8%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Performance Metrics -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-medium text-text-secondary">Model Performance</h3>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-background rounded-lg p-3 border border-cyber text-center">
+                            <div class="text-lg font-bold text-success">96.8%</div>
+                            <div class="text-xs text-text-muted">Accuracy</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber text-center">
+                            <div class="text-lg font-bold text-primary">94.2%</div>
+                            <div class="text-xs text-text-muted">Precision</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber text-center">
+                            <div class="text-lg font-bold text-warning">91.7%</div>
+                            <div class="text-xs text-text-muted">Recall</div>
+                        </div>
+                        <div class="bg-background rounded-lg p-3 border border-cyber text-center">
+                            <div class="text-lg font-bold text-accent">93.0%</div>
+                            <div class="text-xs text-text-muted">F1-Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Predictions -->
+                <div class="mt-6 pt-4 border-t border-cyber">
+                    <h3 class="text-sm font-medium text-text-secondary mb-3">Recent Predictions</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-text-primary">192.168.1.45</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-error rounded-full"></div>
+                                <span class="text-error font-mono">98.4%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-text-primary">10.0.0.123</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-warning rounded-full"></div>
+                                <span class="text-warning font-mono">87.2%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-text-primary">203.0.113.67</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-success rounded-full"></div>
+                                <span class="text-success font-mono">12.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Threat Evolution Timeline -->
+        <section class="bg-surface rounded-xl p-6 border border-cyber shadow-cyber">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-text-primary">Threat Evolution Timeline</h2>
+                <div class="flex items-center space-x-4">
+                    <select class="bg-surface-hover border border-cyber rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none">
+                        <option>Last 30 Days</option>
+                        <option>Last 7 Days</option>
+                        <option>Last 24 Hours</option>
+                        <option>Custom Range</option>
+                    </select>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                        <span class="text-xs text-text-secondary">Predictive Model</span>
+                    </div>
+                    <button class="text-primary text-sm hover:text-primary-400 transition-colors">
+                        Export Timeline
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline Visualization -->
+            <div class="relative h-64 bg-background rounded-lg border border-cyber overflow-hidden">
+                <div class="absolute inset-0 bg-cyber-pattern opacity-10"></div>
+                
+                <!-- Timeline Chart Area -->
+                <div class="absolute inset-0 p-6">
+                    <!-- Y-axis labels -->
+                    <div class="absolute left-2 top-0 bottom-0 flex flex-col justify-between text-xs text-text-muted">
+                        <span>High</span>
+                        <span>Med</span>
+                        <span>Low</span>
+                    </div>
+                    
+                    <!-- Chart area -->
+                    <div class="ml-8 mr-4 h-full relative">
+                        <!-- Historical data line -->
+                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 200">
+                            <polyline points="0,150 50,140 100,120 150,110 200,100 250,95 300,90 350,85 400,80" stroke="currentColor" stroke-width="2" fill="none" class="text-primary"/>
+                            <!-- Predictive overlay -->
+                            <polyline points="300,90 320,85 340,82 360,78 380,75 400,72" stroke="currentColor" stroke-width="2" stroke-dasharray="5,5" fill="none" class="text-accent"/>
+                        </svg>
+                        
+                        <!-- Attack sophistication markers -->
+                        <div class="absolute top-1/4 left-1/4 w-3 h-3 bg-error rounded-full cursor-pointer" title="Advanced Persistent Threat - Sept 15"></div>
+                        <div class="absolute top-1/3 left-1/2 w-4 h-4 bg-warning rounded-full cursor-pointer" title="Zero-day Exploit - Sept 22"></div>
+                        <div class="absolute top-1/5 right-1/4 w-2 h-2 bg-primary rounded-full cursor-pointer" title="AI-Generated Attack - Oct 1"></div>
+                    </div>
+                    
+                    <!-- X-axis timeline -->
+                    <div class="absolute bottom-2 left-8 right-4 flex justify-between text-xs text-text-muted">
+                        <span>Sept 1</span>
+                        <span>Sept 15</span>
+                        <span>Oct 1</span>
+                        <span>Oct 15</span>
+                        <span>Predicted</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attack Sophistication Trends -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Attack Complexity</h4>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-2xl font-bold text-error">7.8</div>
+                        <div class="text-xs text-error">+0.4</div>
+                    </div>
+                    <div class="text-xs text-text-muted mt-1">Scale: 1-10 (Advanced)</div>
+                </div>
+                
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">Evasion Techniques</h4>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-2xl font-bold text-warning">23</div>
+                        <div class="text-xs text-warning">+5</div>
+                    </div>
+                    <div class="text-xs text-text-muted mt-1">Unique methods detected</div>
+                </div>
+                
+                <div class="bg-background rounded-lg p-4 border border-cyber">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">AI-Generated Attacks</h4>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-2xl font-bold text-accent">12%</div>
+                        <div class="text-xs text-accent">+3%</div>
+                    </div>
+                    <div class="text-xs text-text-muted mt-1">Of total attack volume</div>
+                </div>
+            </div>
+
+            <!-- Predictive Insights -->
+            <div class="mt-6 p-4 bg-accent/10 border border-accent/30 rounded-lg">
+                <div class="flex items-start space-x-3">
+                    <div class="w-5 h-5 bg-accent rounded-full flex items-center justify-center mt-0.5">
+                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-accent mb-1">Predictive Intelligence</h4>
+                        <p class="text-sm text-text-secondary">
+                            Our ML models predict a 34% increase in AI-generated attacks over the next 14 days, 
+                            with highest probability targeting financial services infrastructure. 
+                            Recommended: Increase monitoring on ports 443, 8080, and implement additional 
+                            behavioral analysis rules.
+                        </p>
+                        <div class="mt-2 flex items-center space-x-4">
+                            <span class="text-xs text-accent font-medium">Confidence: 87.3%</span>
+                            <span class="text-xs text-text-muted">Model: Ensemble-RF-v2.1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Chat Assistant -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="bg-primary text-background w-14 h-14 rounded-full shadow-cyber-lg hover:shadow-glow-lg transition-all duration-300 flex items-center justify-center group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04 1.05 4.35L2 22l5.65-1.05C9.96 21.64 11.46 22 13 22h7c1.1 0 2-.9 2-2V12c0-5.52-4.48-10-10-10zm0 18c-1.1 0-2.18-.25-3.15-.72L4 20l.72-4.85C4.25 14.18 4 13.1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="12" cy="12" r="1"/>
+            </svg>
+        </button>
+        <div class="absolute bottom-16 right-0 bg-surface border border-cyber rounded-lg p-2 shadow-cyber-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            <span class="text-xs text-text-secondary">Need Help?</span>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-cyber px-4 py-2">
+        <div class="flex items-center justify-around">
+            <a href="security_operations_center.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L3 7v10c0 8.84 5.82 16.64 13 18.93C23.18 33.64 29 25.84 29 17V7L16 2z"/>
+                </svg>
+                <span class="text-xs">SOC</span>
+            </a>
+            <a href="threat_intelligence_hub.html" class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs">Intel</span>
+            </a>
+            <a href="network_traffic_monitor.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7zM7 11h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                </svg>
+                <span class="text-xs">Network</span>
+            </a>
+            <a href="executive_security_view.html" class="flex flex-col items-center space-y-1 text-text-secondary">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+                <span class="text-xs">Executive</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // Simulate real-time ML model updates
+        function updateMLMetrics() {
+            // Simulate accuracy fluctuations
+            const accuracyElement = document.querySelector('.text-success');
+            if (accuracyElement && accuracyElement.textContent.includes('%')) {
+                const current = parseFloat(accuracyElement.textContent);
+                const change = (Math.random() - 0.5) * 0.2;
+                const newValue = Math.max(90, Math.min(99, current + change));
+                accuracyElement.textContent = newValue.toFixed(1) + '%';
+            }
+        }
+
+        // Update correlation matrix hover effects
+        function initializeCorrelationMatrix() {
+            const matrixCells = document.querySelectorAll('.grid-cols-6 > div[title]');
+            matrixCells.forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    // Show detailed IOC information
+                    console.log('Correlation details:', this.title);
+                });
+            });
+        }
+
+        // Simulate predictive model updates
+        function updatePredictiveInsights() {
+            const confidenceElements = document.querySelectorAll('.font-mono');
+            confidenceElements.forEach(element => {
+                if (element.textContent.includes('%') && element.textContent.length < 10) {
+                    const current = parseFloat(element.textContent);
+                    const change = (Math.random() - 0.5) * 2;
+                    const newValue = Math.max(70, Math.min(99, current + change));
+                    element.textContent = newValue.toFixed(1) + '%';
+                }
+            });
+        }
+
+        // Initialize interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCorrelationMatrix();
+            
+            // Update metrics every 10 seconds
+            setInterval(updateMLMetrics, 10000);
+            setInterval(updatePredictiveInsights, 15000);
+        });
+
+        // Simulate drill-down capabilities
+        function enableDrillDown() {
+            const threatElements = document.querySelectorAll('[title*="correlation"]');
+            threatElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    // Simulate navigation to detailed analysis
+                    console.log('Drilling down into:', this.title);
+                });
+            });
+        }
+
+        // Initialize drill-down functionality
+        enableDrillDown();
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>
