@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="chatbot-container">
+        <h1>Chatbot AI</h1>
+        <div class="chat-window">
+            <div class="messages" id="messages"></div>
+            <input type="text" id="user-input" placeholder="Type your message here..." />
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('send-button');
+        const userInput = document.getElementById('user-input');
+        const messages = document.getElementById('messages');
+
+        sendButton.addEventListener('click', () => {
+            const query = userInput.value;
+            if (query) {
+                appendMessage('You: ' + query);
+                userInput.value = '';
+                fetch('/chatbot/respond', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    appendMessage('Chatbot: ' + data.response);
+                });
+            }
+        });
+
+        function appendMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messages.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>

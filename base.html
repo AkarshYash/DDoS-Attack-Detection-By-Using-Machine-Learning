@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chatbot AI Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Chatbot AI Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('admin_panel.render_admin_dashboard') }}">Admin Panel</a></li>
+                <li><a href="{{ url_for('employee_panel.render_employee_dashboard') }}">Employee Panel</a></li>
+                <li><a href="{{ url_for('chatbot.chatbot_interface') }}">Chatbot</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2023 Chatbot AI Dashboard</p>
+    </footer>
+</body>
+</html>

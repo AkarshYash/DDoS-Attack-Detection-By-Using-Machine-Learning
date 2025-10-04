@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Chatbot AI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <div class="admin-panel">
+        <header>
+            <h1>Admin Panel</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('admin.render_admin_dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('employee.render_employee_dashboard') }}">Employee Panel</a></li>
+                    <li><a href="{{ url_for('chatbot.chatbot_interface') }}">Chatbot</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <section class="monitoring">
+            <h2>Monitoring</h2>
+            <div class="ip-addresses">
+                <h3>IP Addresses</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic content for IP addresses will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="data-types">
+                <h3>Data Types</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data Type</th>
+                            <th>Count</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic content for data types will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
