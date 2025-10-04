@@ -1,0 +1,12 @@
+{
+  "description": "A versatile Streamlit project template for data dashboard development. Features proper package structure, dependency management with pip, and virtual environment setup. This template is suitable for development needs related to data visualization dashboards.",
+  "required_fields": [],
+  "required_files": [
+    "app.py",
+    "requirements.txt"
+  ],
+  "lang": "Python",
+  "framework": "Python",
+  "name": "streamlit_template",
+  "scene": "default_python_project"
+}
